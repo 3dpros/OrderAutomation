@@ -1,0 +1,139 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AirtableClientWrapper
+{
+    public class OrderData
+    {
+        public const string OrderIDKey = "order ID";
+        public const string DescriptionKey = "Description";
+        public const string NotesKey = "Notes";
+        public const string CustomerKey = "Customer";
+        public const string TotalPaymentKey = "Total Payment";
+        public const string ActualShippingKey = "Actual Shipping";
+        public const string ShippingChargeKey = "Shipping Charge";
+        public const string MaterialCostKey = "Supplies Cost";
+        public const string RushKey = "Rush";
+        public const string DueDateKey = "Due Date";
+        public const string PrintOperatorKey = "Printer Operator";
+        public const string ShipperKey = "Shipping";
+        public const string ChannelKey = "Channel";
+
+        private Dictionary<string, string> _NameLookup;
+        private Dictionary<string, string> _ChannelLookup;
+
+        public int OrderID { get; set; }
+        public string Description { get; set; }
+        public string CustomerEmail { get; set; }
+        public string Notes { get; set; }
+        public double TotalPrice { get; set; }
+        public double ShippingCost { get; set; }
+        public double ShippingCharge { get; set; }
+        public double MaterialCost { get; set; }
+        public bool Rush { get; set; }
+        public DateTime DueDate { get; set; }
+        public string PrintOperator { get; set; }
+        public string Shipper { get; set; }
+        public string Channel { get; set; }
+
+
+        public OrderData(int orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup)
+        {
+            _NameLookup = nameLookup;
+            _ChannelLookup = channelLookup;
+
+            this.OrderID = orderID;
+
+        }
+
+
+        public OrderData(Dictionary<string, object> fields, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup) : this(Int32.Parse(fields.GetString(OrderIDKey)), nameLookup, channelLookup)
+        {
+
+            Description = fields.GetString(DescriptionKey);
+            CustomerEmail = fields.GetString(CustomerKey);
+            Notes = fields.GetString(NotesKey);
+            TotalPrice = Double.Parse(fields.GetString(TotalPaymentKey));
+            ShippingCost = Double.Parse(fields.GetString(ActualShippingKey));
+            ShippingCharge = Double.Parse(fields.GetString(ActualShippingKey));
+            MaterialCost = Double.Parse(fields.GetString(MaterialCostKey));
+            DueDate = DateTime.Parse(fields.GetString(DueDateKey));
+            Rush = (fields.GetString(RushKey).ToLower() == "true");
+            Channel = GetNameFromIdIfPresent(fields.GetString(ChannelKey), _ChannelLookup);
+            PrintOperator = GetNameFromIdIfPresent(fields.GetString(PrintOperatorKey), _NameLookup);
+            Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
+        }
+
+        private string GetNameFromIdIfPresent(object nameID, Dictionary<string, string> lookup)
+        {
+            var nameIDString = nameID.ToString();
+
+            if (lookup?.ContainsKey(nameIDString) == true)
+                return lookup[nameIDString];
+            else if (lookup != null)
+            {
+                //if exact match isnt found, try for inexact match
+                foreach (KeyValuePair<string, string> item in lookup)
+                {
+                    if (item.Key.Contains(nameIDString) || nameIDString.Contains(item.Key))
+                    {
+                        return (item.Value);
+                    }
+                }
+            }
+            return nameIDString;
+        }
+
+
+        private List<string> GetIdFromNameIfPresent(string name, Dictionary<string, string> lookup)
+        {
+            var IDs = new List<string>();
+
+            if (lookup != null && name != null)
+            {
+                //if exact match isnt found, try for inexact match
+                foreach (KeyValuePair<string, string> item in lookup)
+                {
+                    if (item.Value.Contains(name) || name.Contains(item.Value))
+                    {
+                        IDs.Add(item.Key);
+                        return IDs;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public Dictionary<string, object> ToDictionary()
+        {
+            Dictionary<string, object> orderDictionary = new Dictionary<string, object>();
+            string[] printOperatorID = GetIdFromNameIfPresent(PrintOperator, _NameLookup)?.ToArray();
+            string[] shipperID = GetIdFromNameIfPresent(Shipper, _NameLookup)?.ToArray();
+            string[] channelID = GetIdFromNameIfPresent(Channel, _ChannelLookup)?.ToArray();
+
+
+            orderDictionary.AddIfNotNull(OrderIDKey, OrderID.ToString());
+            orderDictionary.AddIfNotNull(DescriptionKey, Description);
+            orderDictionary.AddIfNotNull(NotesKey, Notes);
+            orderDictionary.AddIfNotNull(CustomerKey, CustomerEmail);
+            orderDictionary.AddIfNotNull(TotalPaymentKey, TotalPrice);
+            orderDictionary.AddIfNotNull(ActualShippingKey, ShippingCost);
+            orderDictionary.AddIfNotNull(ShippingChargeKey, ShippingCharge);
+            orderDictionary.AddIfNotNull(MaterialCostKey, MaterialCost);
+            orderDictionary.AddIfNotNull(DueDateKey, DueDate.ToString("d"));
+            orderDictionary.AddIfNotNull(RushKey, Rush);
+            orderDictionary.AddIfNotNull(PrintOperatorKey, printOperatorID);
+            orderDictionary.AddIfNotNull(ShipperKey, shipperID);
+            orderDictionary.AddIfNotNull(ChannelKey, channelID);
+
+            return orderDictionary;
+        }
+
+    }
+
+}
+
