@@ -7,10 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirtableClientWrapper", "Ai
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirtableClientWrapperTests", "AirtableClientWrapperTests\AirtableClientWrapperTests.csproj", "{3890C390-85DB-4908-AB33-07995C0D4613}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{816D94DD-0834-494F-8619-D93F66DF39BC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{432F7FE9-2467-4641-8F52-7658928A8CBB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,14 +21,6 @@ Global
 		{3890C390-85DB-4908-AB33-07995C0D4613}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3890C390-85DB-4908-AB33-07995C0D4613}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3890C390-85DB-4908-AB33-07995C0D4613}.Release|Any CPU.Build.0 = Release|Any CPU
-		{816D94DD-0834-494F-8619-D93F66DF39BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{816D94DD-0834-494F-8619-D93F66DF39BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{816D94DD-0834-494F-8619-D93F66DF39BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{816D94DD-0834-494F-8619-D93F66DF39BC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{432F7FE9-2467-4641-8F52-7658928A8CBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{432F7FE9-2467-4641-8F52-7658928A8CBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{432F7FE9-2467-4641-8F52-7658928A8CBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{432F7FE9-2467-4641-8F52-7658928A8CBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

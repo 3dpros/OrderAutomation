@@ -1,0 +1,23 @@
+﻿https://github.com/acron0/AsanaNet
+
+
+ var asana = new Asana(YOUR_API_KEY, AuthenticationType.Basic, errorCallback);
+
+
+ asana.GetMe(o =>
+{
+        var user = o as AsanaUser;
+        Console.WriteLine("Hello, " + user.Name);
+});
+
+asana.GetMe(o =>
+{
+        var user = o as AsanaUser;
+        Console.WriteLine("Hello, " + user.Name);
+}).Wait();
+
+
+static void errorCallback(string s1, string s2, string s3)
+{
+
+}

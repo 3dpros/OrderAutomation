@@ -21,7 +21,7 @@ namespace AirtableClientWrapper
         public string GetRecordName(string recordID)
         {
 
-            Task<AirtableRetrieveRecordResponse> task = _airtableBase.RetrieveRecord(TableName, recordID);
+            Task<AirtableRetrieveRecordResponse> task = _mainAirtableBase.RetrieveRecord(TableName, recordID);
             var response = task.Result;
 
             return response.Record.Fields["Name"].ToString();
@@ -33,7 +33,7 @@ namespace AirtableClientWrapper
             //AirtableRecord record = new AirtableRecord();
             Fields fields = new Fields();
             fields.FieldsCollection = expensesData.ToDictionary();
-            Task<AirtableCreateUpdateReplaceRecordResponse> task = _airtableBase.CreateRecord(TableName, fields);
+            Task<AirtableCreateUpdateReplaceRecordResponse> task = _mainAirtableBase.CreateRecord(TableName, fields);
             var response = task.Result;
 
         }
