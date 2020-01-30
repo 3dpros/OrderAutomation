@@ -24,47 +24,101 @@ namespace AirtableClientWrapper
         }
 
 
-        public OrderData GetRecordByOrderID(int OrderID)
+        public OrderData GetRecordByOrderID(string OrderID, out string recordID)
         {
-            string offset = "";
-            string query = "{" + orderIDKey + "} = '" + OrderID.ToString() + "'";
+            return GetRecordByField(orderIDKey, OrderID, out recordID);
+        }
 
-            Task<AirtableListRecordsResponse> task = _airtableBase.ListRecords(TableName, offset, null, query);
+        public OrderData GetRecordByField(string fieldName, string fieldValue, out string recordID)
+        {
+            recordID = "";
+            string offset = "";
+            string query = "{" + fieldName + "} = '" + fieldValue + "'";
+
+            Task<AirtableListRecordsResponse> task = _mainAirtableBase.ListRecords(TableName, offset, null, query);
+            
 
             var response = task.Result;
             if (response.Records.Any())
             {
                 var record = response.Records.FirstOrDefault();
+                recordID = record.Id;
                 return new OrderData(record.Fields, _paymentTable.GetNamesLookup(), _channelTable.GetNamesLookup());
             }
             return null;
         }
         
+        public List<OrderData> GetAllRecordsInView(string viewName, List<string> nameSearchStrings)
+        {
+            Task<AirtableListRecordsResponse> task = _mainAirtableBase.ListRecords(TableName, view: viewName);
 
-        public void CreateOrderRecord(OrderData order, bool replaceIfIdPresent = false)
+            var response = task.Result;
+            var orders = new List<OrderData>();
+            foreach(var record in response.Records)
+            {
+                var orderData = new OrderData(record.Fields, _paymentTable.GetNamesLookup(), _channelTable.GetNamesLookup());
+                bool match = false;
+                foreach (string searchString in nameSearchStrings)
+                {
+                    if (orderData.Description.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
+                    {
+                        match = true;
+                        break;
+
+                    }
+                }
+                if(match)
+                orders.Add(orderData);
+            }
+            return orders;
+        }
+
+
+        public bool CreateOrderRecord(OrderData order, bool updateIfPresent = false)
         {
             //AirtableRecord record = new AirtableRecord();
             Fields fields = new Fields();
             fields.FieldsCollection = order.ToDictionary();
-            bool doUpdate = true;
+            string orderID = "";
+            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out orderID);
 
-            if (!replaceIfIdPresent)
+            //order is present
+            if (existingRecord != null)
             {
-                if (GetRecordByOrderID(order.OrderID) != null)
+                //do not replace if present
+                if (!updateIfPresent)
                 {
-                    doUpdate = false;
+                    return false;
+                }
+                else
+                {
+                    var task = _mainAirtableBase.UpdateRecord(TableName, fields, orderID);
                 }
             }
-            if (doUpdate)
+            else
             {
-                Task<AirtableCreateUpdateReplaceRecordResponse> task = _airtableBase.CreateRecord(TableName, fields);
-                var response = task.Result;
-            }
 
+                var task = _mainAirtableBase.CreateRecord(TableName, fields);
+                var response = task.Result;
+
+                return task.Result.Success;
+            }
+            return false;
 
         }
+        public bool UpdateOrderRecord(OrderData order)
+        {
+            Fields fields = new Fields();
+            fields.FieldsCollection = order.ToDictionary();
+            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out string orderID);
+            var task = _mainAirtableBase.UpdateRecord(TableName, fields, orderID);
+            var response = task.Result;
+            return task.Result.Success;
+        }
 
-        public OrderData newOrderData(int orderID)
+
+
+        public OrderData newOrderData(string orderID)
         {
             OrderData a = new OrderData(orderID, _paymentTable.GetNamesLookup(), _channelTable.GetNamesLookup());
             if(a is null)

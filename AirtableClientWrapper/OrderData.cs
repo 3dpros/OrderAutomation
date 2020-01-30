@@ -21,26 +21,37 @@ namespace AirtableClientWrapper
         public const string PrintOperatorKey = "Printer Operator";
         public const string ShipperKey = "Shipping";
         public const string ChannelKey = "Channel";
+        public const string ShippedDateKey = "Ship Date";
+        public const string AsanaTaskIDKey = "Asana Task ID";
+        public const string OptinSentTypeKey = "Optin Sent Type";
+        public const string SalesTaxKey = "Sales Tax Charged";
+
+
 
         private Dictionary<string, string> _NameLookup;
         private Dictionary<string, string> _ChannelLookup;
 
-        public int OrderID { get; set; }
+        public string OrderID { get; set; }
         public string Description { get; set; }
         public string CustomerEmail { get; set; }
         public string Notes { get; set; }
         public double TotalPrice { get; set; }
         public double ShippingCost { get; set; }
         public double ShippingCharge { get; set; }
+        public double SalesTax { get; set; }
+
         public double MaterialCost { get; set; }
         public bool Rush { get; set; }
         public DateTime DueDate { get; set; }
+        public DateTime ShipDate { get; set; }
         public string PrintOperator { get; set; }
         public string Shipper { get; set; }
         public string Channel { get; set; }
+        public string AsanaTaskID { get; set; }
+        public string OptinSentType { get; set; }
 
 
-        public OrderData(int orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup)
+        public OrderData(string orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup)
         {
             _NameLookup = nameLookup;
             _ChannelLookup = channelLookup;
@@ -50,21 +61,38 @@ namespace AirtableClientWrapper
         }
 
 
-        public OrderData(Dictionary<string, object> fields, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup) : this(Int32.Parse(fields.GetString(OrderIDKey)), nameLookup, channelLookup)
+        public OrderData(Dictionary<string, object> fields, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup) : this(fields.GetString(OrderIDKey), nameLookup, channelLookup)
         {
 
             Description = fields.GetString(DescriptionKey);
             CustomerEmail = fields.GetString(CustomerKey);
             Notes = fields.GetString(NotesKey);
-            TotalPrice = Double.Parse(fields.GetString(TotalPaymentKey));
-            ShippingCost = Double.Parse(fields.GetString(ActualShippingKey));
-            ShippingCharge = Double.Parse(fields.GetString(ActualShippingKey));
-            MaterialCost = Double.Parse(fields.GetString(MaterialCostKey));
-            DueDate = DateTime.Parse(fields.GetString(DueDateKey));
+            TotalPrice = NumberParseOrDefault(fields.GetString(TotalPaymentKey));
+            ShippingCost = NumberParseOrDefault(fields.GetString(ActualShippingKey));
+            ShippingCharge = NumberParseOrDefault(fields.GetString(ActualShippingKey));
+            SalesTax = NumberParseOrDefault(fields.GetString(SalesTaxKey));
+            MaterialCost = NumberParseOrDefault(fields.GetString(MaterialCostKey));
+            if (fields.GetString(DueDateKey) != "")
+            { DueDate = DateTime.Parse(fields.GetString(DueDateKey)); }
+            if (fields.GetString(ShippedDateKey) != "")
+            { ShipDate = DateTime.Parse(fields.GetString(ShippedDateKey)); }
             Rush = (fields.GetString(RushKey).ToLower() == "true");
             Channel = GetNameFromIdIfPresent(fields.GetString(ChannelKey), _ChannelLookup);
             PrintOperator = GetNameFromIdIfPresent(fields.GetString(PrintOperatorKey), _NameLookup);
             Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
+            AsanaTaskID = fields.GetString(AsanaTaskIDKey);
+            OptinSentType = fields.GetString(OptinSentTypeKey);
+
+        }
+
+        private double NumberParseOrDefault(string value, double defaultVal = 0)
+        {
+            double result;
+            if(Double.TryParse(value, out result))
+            {
+                return result;
+            }
+            return defaultVal;
         }
 
         private string GetNameFromIdIfPresent(object nameID, Dictionary<string, string> lookup)
@@ -94,6 +122,13 @@ namespace AirtableClientWrapper
 
             if (lookup != null && name != null)
             {
+                if(lookup.ContainsValue(name))
+                {
+                    IDs = (from item in lookup
+                           where item.Value == name
+                           select item.Key).ToList();
+                    return IDs;
+                }
                 //if exact match isnt found, try for inexact match
                 foreach (KeyValuePair<string, string> item in lookup)
                 {
@@ -122,13 +157,24 @@ namespace AirtableClientWrapper
             orderDictionary.AddIfNotNull(CustomerKey, CustomerEmail);
             orderDictionary.AddIfNotNull(TotalPaymentKey, TotalPrice);
             orderDictionary.AddIfNotNull(ActualShippingKey, ShippingCost);
+            orderDictionary.AddIfNotNull(SalesTaxKey, SalesTax);
             orderDictionary.AddIfNotNull(ShippingChargeKey, ShippingCharge);
             orderDictionary.AddIfNotNull(MaterialCostKey, MaterialCost);
-            orderDictionary.AddIfNotNull(DueDateKey, DueDate.ToString("d"));
+            if (DueDate.Year > 2010)
+            {
+                orderDictionary.AddIfNotNull(DueDateKey, DueDate.ToString("d"));
+            }
+            if (ShipDate.Year > 2010)
+            {
+                orderDictionary.AddIfNotNull(ShippedDateKey, ShipDate.ToString("d"));
+            }
             orderDictionary.AddIfNotNull(RushKey, Rush);
             orderDictionary.AddIfNotNull(PrintOperatorKey, printOperatorID);
             orderDictionary.AddIfNotNull(ShipperKey, shipperID);
             orderDictionary.AddIfNotNull(ChannelKey, channelID);
+            orderDictionary.AddIfNotNull(AsanaTaskIDKey, AsanaTaskID);
+            orderDictionary.AddIfNotNull(OptinSentTypeKey, OptinSentType);
+
 
             return orderDictionary;
         }

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AirtableClientWrapper\AirtableClientWrapper.csproj" />
+    <ProjectReference Include="..\AsanaWrapper\AsanaWrapper.csproj" />
   </ItemGroup>
 
 </Project>

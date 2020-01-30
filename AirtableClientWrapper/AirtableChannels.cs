@@ -22,7 +22,7 @@ namespace AirtableClientWrapper
         public string GetRecordName(string recordID)
         {
 
-            Task<AirtableRetrieveRecordResponse> task = _airtableBase.RetrieveRecord(TableName, recordID);
+            Task<AirtableRetrieveRecordResponse> task = _mainAirtableBase.RetrieveRecord(TableName, recordID);
             var response = task.Result;
             if (response.Record.Fields.ContainsKey(nameKey))
             {
@@ -33,7 +33,7 @@ namespace AirtableClientWrapper
 
         public Dictionary<string, string> GetNamesLookup()
         {
-            Task<AirtableListRecordsResponse> task = _airtableBase.ListRecords(TableName);
+            Task<AirtableListRecordsResponse> task = _mainAirtableBase.ListRecords(TableName);
             var response = task.Result;
             var dict = new Dictionary<string, string>();
 
