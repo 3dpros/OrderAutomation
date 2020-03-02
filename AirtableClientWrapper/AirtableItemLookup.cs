@@ -62,6 +62,10 @@ namespace AirtableClientWrapper
         public bool UpdateInventoryCountForTransaction(ItemData product, int quantityOrdered, out List<ItemComponentData> components, string orderID = "")
         {
             components = new List<ItemComponentData>();
+            if (product == null)
+            {
+                return false;
+            }
             var productRecord = product.Record;
             if (productRecord != null)
             {
@@ -74,14 +78,10 @@ namespace AirtableClientWrapper
                         var cTask = _invAirtableBase.RetrieveRecord(componentsFieldName, component.ToString());
                         var componentRecord = new ItemComponentData(cTask.Result.Record);
 
-                        //for now, don't track quantities of external things we don't print
-                        if (!componentRecord.IsExternal)
-                        {
-                            var fields = new Fields();
-                            fields.FieldsCollection["Quantity"] = componentRecord.Quantity - quantityOrdered;
-                            UpdateInventoryRecord(componentsFieldName, componentRecord.Record.Id, fields);
-                            LogInventoryEntry(productRecord.Fields[nameKey].ToString(), component.ToString(), -quantityOrdered, orderID);
-                        }
+                        var fields = new Fields();
+                        fields.FieldsCollection["Quantity"] = componentRecord.Quantity - quantityOrdered;
+                        UpdateInventoryRecord(componentsFieldName, componentRecord.Record.Id, fields);
+                        LogInventoryEntry(productRecord.Fields[nameKey].ToString(), component.ToString(), -quantityOrdered, orderID);                        
 
                         //re-read the record so the component is updated based on the new quantities.  eventually should make this cleaner
                         cTask = _invAirtableBase.RetrieveRecord(componentsFieldName, component.ToString());
@@ -98,12 +98,13 @@ namespace AirtableClientWrapper
         public bool UpdateComponentForInventoryRequest(ItemComponentData componentRecord)
         {
             var fields = new Fields();
-            fields.FieldsCollection["Pending"] = componentRecord.Pending + componentRecord.BatchSize;
-            LogInventoryEntry("Inventory Request created for " + componentRecord.Name, componentRecord.Record.Id, componentRecord.Pending);
+            var numberToRequest = componentRecord.BatchSize * componentRecord.NumberOfBatches;
+            fields.FieldsCollection["Pending"] = componentRecord.Pending + numberToRequest;
+            LogInventoryEntry("Inventory Request created for " + componentRecord.Name, componentRecord.Record.Id, numberToRequest);
             return UpdateInventoryRecord(componentsFieldName, componentRecord.Record.Id, fields);
         }
 
-        public bool UpdateComponentQuantityByName(string componentName, int quantityChange)
+        public bool UpdateComponentQuantityByName(string componentName, int quantityChange, int originalRequestQuantity)
         {
             string offset = "";
             string query = "{" + nameKey + "} = '" + componentName + "'";
@@ -114,7 +115,7 @@ namespace AirtableClientWrapper
             {
                 var fields = new Fields();
                 fields.FieldsCollection["Quantity"] = int.Parse(record.Fields["Quantity"].ToString()) + quantityChange;
-                fields.FieldsCollection["Pending"] = int.Parse(record.Fields["Pending"].ToString()) - quantityChange;
+                fields.FieldsCollection["Pending"] = int.Parse(record.Fields["Pending"].ToString()) - originalRequestQuantity;
                 UpdateInventoryRecord(componentsFieldName, record.Id, fields);
                 LogInventoryEntry("Inventory Request completed for " + componentName, record.Id, quantityChange);
                 return true;

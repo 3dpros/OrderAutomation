@@ -25,7 +25,7 @@ namespace AirtableClientWrapper
         public const string AsanaTaskIDKey = "Asana Task ID";
         public const string OptinSentTypeKey = "Optin Sent Type";
         public const string SalesTaxKey = "Sales Tax Charged";
-
+        public const string ValueOfInventoryKey = "Value of Inventory Products";
 
 
         private Dictionary<string, string> _NameLookup;
@@ -49,6 +49,7 @@ namespace AirtableClientWrapper
         public string Channel { get; set; }
         public string AsanaTaskID { get; set; }
         public string OptinSentType { get; set; }
+        public double ValueOfInventory { get; set; }
 
 
         public OrderData(string orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup)
@@ -82,6 +83,7 @@ namespace AirtableClientWrapper
             Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
             AsanaTaskID = fields.GetString(AsanaTaskIDKey);
             OptinSentType = fields.GetString(OptinSentTypeKey);
+            ValueOfInventory = NumberParseOrDefault(fields.GetString(ValueOfInventoryKey));
 
         }
 
@@ -174,7 +176,7 @@ namespace AirtableClientWrapper
             orderDictionary.AddIfNotNull(ChannelKey, channelID);
             orderDictionary.AddIfNotNull(AsanaTaskIDKey, AsanaTaskID);
             orderDictionary.AddIfNotNull(OptinSentTypeKey, OptinSentType);
-
+            orderDictionary.AddIfNotNull(ValueOfInventoryKey, ValueOfInventory);
 
             return orderDictionary;
         }

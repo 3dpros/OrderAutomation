@@ -51,17 +51,19 @@ namespace AirtableClientWrapperTests
             order.Notes = "this is a test order";
             order.ShippingCost = 10.21;
             order.Description = "test order";
-            //  order.PrintOperator = "Al Billington";
-            //   order.Shipper = "Leah";
-           // order.ShippingCharge = Math.Min(7;
+
             order.Channel = "Direct";
             order.AsanaTaskID = "3242342634652352";
+
             ATbase.CreateOrderRecord(order);
 
             order.MaterialCost = 12.34;
             order.TotalPrice = 504.23;
-//            order.ShipDate = DateTime.Now;
+            order.ValueOfInventory = 233.04;
+
+            //            order.ShipDate = DateTime.Now;
             ATbase.CreateOrderRecord(order, true);
+
 
         }
 
@@ -80,7 +82,7 @@ namespace AirtableClientWrapperTests
         public void UpdateComponentQuantityByName_test()
         {
             var sut = new AirtableItemLookup();
-            sut.UpdateComponentQuantityByName("Weight Plate Ornament, Black with Silver Text", 23);
+            sut.UpdateComponentQuantityByName("ZZZ - Dummy Item", 23, 22);
         }
 
         [Fact]
@@ -174,8 +176,21 @@ namespace AirtableClientWrapperTests
             var materials = new AirtableItemLookup();
             var components = new List<ItemComponentData>();
             var record = materials.FindItemRecord("Printed Crochet Blocking Board - extra", "purple", 6);
-           bool value = materials.UpdateInventoryCountForTransaction(record, 3, out components);
+           bool value = materials.UpdateInventoryCountForTransaction(record, 0, out components);
 
+        }
+
+        [Fact]
+
+        public void GetInventoryItem()
+        {
+            
+            var materials = new AirtableItemLookup();
+            var components = new List<ItemComponentData>();
+            var record = materials.FindItemRecord("zzz - dummy item");
+            bool value = materials.UpdateInventoryCountForTransaction(record, 1, out components);
+            var test = components[0].NumberOfBatches;
+            
         }
 
         [Fact]

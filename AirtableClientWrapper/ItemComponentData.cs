@@ -16,7 +16,7 @@ namespace AirtableClientWrapper
         private readonly string quantityFieldName = "Quantity";
         private readonly string detailsFieldName = "Details";
         private readonly string externalFieldName = "External";
-
+        private readonly string numberOfBatchesFieldName = "Number Of Batches";
 
 
         public int Quantity
@@ -61,6 +61,19 @@ namespace AirtableClientWrapper
                 return 1;
             }
         }
+
+        public int NumberOfBatches
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey(numberOfBatchesFieldName))
+                {
+                    return Math.Max(1, int.Parse(Record.Fields[numberOfBatchesFieldName]?.ToString()));
+                }
+                return 1;
+            }
+        }
+        
         public int Pending
         {
             get
