@@ -7,15 +7,11 @@ using System.Threading.Tasks;
 
 namespace AirtableClientWrapper
 {
-    public class AirtableBaseTable : IDisposable
+    public partial class AirtableBaseTable : IDisposable
     {
 
             protected AirtableApiClient.AirtableBase _mainAirtableBase;
             protected AirtableApiClient.AirtableBase _invAirtableBase;
-
-            private readonly string APIkey = "keyulyUigcnm900QJ";
-            private readonly string mainAppID = "appelZMJhSKxEgz9q";
-            private readonly string invAppID = "appcbOsHUuRnuaPZ9";
 
 
             public AirtableBaseTable()
