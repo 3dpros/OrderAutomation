@@ -7,17 +7,24 @@ using System.Threading.Tasks;
 
 namespace AirtableClientWrapper
 {
-    public class ItemComponentData
+    public class InventoryComponent
     {
         private readonly string nameFieldName = "Name";
         private readonly string minimumStockFieldName = "Minimum Stock";
         private readonly string batchSizeFieldName = "Batch Size";
+        private readonly string internalPriceFieldName = "Internal Price";
         private readonly string pendingFieldName = "Pending";
         private readonly string quantityFieldName = "Quantity";
         private readonly string detailsFieldName = "Details";
         private readonly string externalFieldName = "External";
         private readonly string numberOfBatchesFieldName = "Number Of Batches";
 
+        public Fields UpdatedFields = new Fields();
+        private void updateRecord(string fieldName, object value)
+        {
+            Record.Fields[fieldName] = value;
+            UpdatedFields.FieldsCollection[fieldName] = value;
+        }
 
         public int Quantity
         {
@@ -31,11 +38,7 @@ namespace AirtableClientWrapper
             }
             set
             {
-                if (Record.Fields.ContainsKey(quantityFieldName))
-                {
-                    Record.Fields[quantityFieldName] = value;
-                }
-                else Record.Fields.Add(quantityFieldName, value);
+                updateRecord(quantityFieldName, value);
             }
         }
         public int MinimumStock
@@ -47,6 +50,18 @@ namespace AirtableClientWrapper
                     return int.Parse(Record.Fields[minimumStockFieldName]?.ToString());
                 }
                 return -1;
+            }
+        }
+
+        public double InternalPrice
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey(internalPriceFieldName))
+                {
+                    return double.Parse(Record.Fields[internalPriceFieldName]?.ToString());
+                }
+                return 0;
             }
         }
 
@@ -86,11 +101,7 @@ namespace AirtableClientWrapper
             }
             set
             {
-                if (Record.Fields.ContainsKey(pendingFieldName))
-                {
-                    Record.Fields[pendingFieldName] = value;
-                }
-                else Record.Fields.Add(pendingFieldName, value);
+                updateRecord(pendingFieldName, value);
             }
         }
 
@@ -132,7 +143,7 @@ namespace AirtableClientWrapper
 
         public AirtableRecord Record { get; }
 
-        public ItemComponentData(AirtableRecord record)
+        public InventoryComponent(AirtableRecord record)
         {
             Record = record;
         }
@@ -141,6 +152,8 @@ namespace AirtableClientWrapper
         {
             return (MinimumStock > (Quantity + Pending));
         }
+
+
 
         public Dictionary<string, object> ToDictionary()
         {

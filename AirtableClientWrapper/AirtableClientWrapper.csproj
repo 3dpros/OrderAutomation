@@ -59,8 +59,8 @@
     <Compile Include="AirtableItemLookup.cs" />
     <Compile Include="AirtableChannels.cs" />
     <Compile Include="AirtablePayment.cs" />
-    <Compile Include="ItemComponentData.cs" />
-    <Compile Include="ItemData.cs" />
+    <Compile Include="InventoryComponent.cs" />
+    <Compile Include="InventoryProduct.cs" />
     <Compile Include="ExpensesData.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Logger.cs" />

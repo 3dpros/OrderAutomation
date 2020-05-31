@@ -93,6 +93,9 @@ namespace AirtableClientWrapper
                 else
                 {
                     var task = _mainAirtableBase.UpdateRecord(TableName, fields, orderID);
+                    var response = task.Result;
+                    return task.Result.Success;
+
                 }
             }
             else
@@ -116,6 +119,13 @@ namespace AirtableClientWrapper
             return task.Result.Success;
         }
 
+        public bool DeleteOrderRecord(OrderData order)
+        {
+            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out string orderID);
+            var task = _mainAirtableBase.DeleteRecord(TableName, orderID);
+            var response = task.Result;
+            return task.Result.Success;
+        }
 
 
         public OrderData newOrderData(string orderID)

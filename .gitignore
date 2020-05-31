@@ -2,6 +2,13 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
-/AirtableClientWrapperTests/bin
-/AirtableClientWrapper/bin
+*.suo
+*.user
+_ReSharper.*
+.vs
+bin
+obj
+packages
+AirtableClientWrapper/AirtableKeys.cs
+*.cache
+*.cache

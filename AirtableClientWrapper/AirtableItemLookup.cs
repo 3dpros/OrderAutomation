@@ -11,20 +11,20 @@ namespace AirtableClientWrapper
 {
     public class TransactionRecord
     {
-        public ItemData Record { set; get; }
+        public InventoryProduct Record { set; get; }
         public int Quantity { set; get; }
     }
 
     public class AirtableItemLookup : AirtableBaseTable
     {
-        private readonly string TableName = "Item Lookup";
+        private readonly string TableName = "Products Database";
         private readonly string nameKey = "Name";
         private readonly string logFieldName = "Log";
         private readonly string skuKey = "SKU";
         private readonly string componentsFieldName = "Components";
-
-
-
+        private readonly string potentialPrintersFieldName = "Potential Printers";
+        private readonly string preferredPrinterFieldName = "Preferred Printer";
+        private readonly string defaultOwnersTableName = "Printers";
 
 
         public AirtableItemLookup() : base()
@@ -39,6 +39,12 @@ namespace AirtableClientWrapper
 
             return response.Record.Fields[nameKey].ToString();
 
+        }
+
+        public AirtableRecord RetreiveComponentsRecord(string recordID)
+        {
+            var cTask = _invAirtableBase.RetrieveRecord(componentsFieldName, recordID);
+            return cTask.Result.Record;
         }
 
         private List<AirtableRecord> GetMaterialsLookup()
@@ -59,83 +65,123 @@ namespace AirtableClientWrapper
 
 
         //Transaction is a purchase of one or more of a single product, orders can contain one or more transactions
-        public bool UpdateInventoryCountForTransaction(ItemData product, int quantityOrdered, out List<ItemComponentData> components, string orderID = "")
+        public bool UpdateInventoryCountForTransaction(InventoryProduct product, int quantityOrdered, out List<InventoryComponent> components, string orderID = "")
         {
-            components = new List<ItemComponentData>();
+            components = new List<InventoryComponent>();
             if (product == null)
             {
                 return false;
             }
-            var productRecord = product.Record;
+            components = product.getComponents(this);
+
+            foreach (var component in components)
+            {
+                component.Quantity = component.Quantity - quantityOrdered;
+                LogInventoryEntry(component.Name, component.Record.Id, -quantityOrdered, orderID);
+                UpdateComponentRecord(component);
+            }
+            return true;
+
+
+        }
+        public bool GetPotentialPrintersList(InventoryProduct product, out List<string> printerNames, out string preferredPrinter)
+        {
+            return GetPotentialPrintersListCore(product.Record, out printerNames, out preferredPrinter);
+        }
+        public bool GetPotentialPrintersList(InventoryComponent component, out List<string> printerNames, out string preferredPrinter)
+        {
+            return GetPotentialPrintersListCore(component.Record, out printerNames, out preferredPrinter);
+        }
+        private bool GetPotentialPrintersListCore(AirtableRecord record, out List<string> printerNames, out string preferredPrinter)
+        {
+            
+            printerNames = new List<string>();
+            preferredPrinter = "";
+            if (record == null)
+            {
+                return false;
+            }
+            var productRecord = record;
             if (productRecord != null)
             {
 
-                if (productRecord.Fields.ContainsKey(componentsFieldName))
+                if (productRecord.Fields.ContainsKey(potentialPrintersFieldName))
                 {
-                    foreach (var component in (JArray)(productRecord.Fields[componentsFieldName]))
+
+                    foreach (var component in (JArray)(productRecord.Fields[potentialPrintersFieldName]))
                     {
 
-                        var cTask = _invAirtableBase.RetrieveRecord(componentsFieldName, component.ToString());
-                        var componentRecord = new ItemComponentData(cTask.Result.Record);
+                        var cTask = _invAirtableBase.RetrieveRecord(defaultOwnersTableName, component.ToString());
+                        printerNames.Add(cTask.Result.Record.Fields["Name"].ToString());
 
-                        var fields = new Fields();
-                        fields.FieldsCollection["Quantity"] = componentRecord.Quantity - quantityOrdered;
-                        UpdateInventoryRecord(componentsFieldName, componentRecord.Record.Id, fields);
-                        LogInventoryEntry(productRecord.Fields[nameKey].ToString(), component.ToString(), -quantityOrdered, orderID);                        
-
-                        //re-read the record so the component is updated based on the new quantities.  eventually should make this cleaner
-                        cTask = _invAirtableBase.RetrieveRecord(componentsFieldName, component.ToString());
-                        componentRecord = new ItemComponentData(cTask.Result.Record);
-                        components.Add(componentRecord);
                     }
+                }
+                if(productRecord.Fields.ContainsKey(preferredPrinterFieldName))
+                { 
+                    foreach (var component in (JArray)(productRecord.Fields[preferredPrinterFieldName]))
+                    {
+                        var cTask = _invAirtableBase.RetrieveRecord(defaultOwnersTableName, component.ToString());
+                        preferredPrinter =cTask.Result.Record.Fields["Name"].ToString();
+                        break;
+                    }
+
                     return true;
                 }
             }
             return false;
-
         }
 
-        public bool UpdateComponentForInventoryRequest(ItemComponentData componentRecord)
+        public bool LogInventoryRequestCreation(InventoryComponent componentRecord, int numberToRequest)
         {
-            var fields = new Fields();
-            var numberToRequest = componentRecord.BatchSize * componentRecord.NumberOfBatches;
-            fields.FieldsCollection["Pending"] = componentRecord.Pending + numberToRequest;
+            componentRecord.Pending += numberToRequest;
             LogInventoryEntry("Inventory Request created for " + componentRecord.Name, componentRecord.Record.Id, numberToRequest);
-            return UpdateInventoryRecord(componentsFieldName, componentRecord.Record.Id, fields);
+            UpdateComponentRecord(componentRecord);
+            return true;
         }
-
         public bool UpdateComponentQuantityByName(string componentName, int quantityChange, int originalRequestQuantity)
         {
-            string offset = "";
-            string query = "{" + nameKey + "} = '" + componentName + "'";
-            
-            Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(componentsFieldName, offset, null, query);
-            var record = task.Result.Records.FirstOrDefault();
-            if (record != null)
+            return UpdateComponentQuantity(GetComponentByName(componentName), quantityChange, originalRequestQuantity);
+        }
+        public bool UpdateComponentQuantity(InventoryComponent component, int quantityChange, int originalRequestQuantity)
+        {
+            if (component != null)
             {
                 var fields = new Fields();
-                fields.FieldsCollection["Quantity"] = int.Parse(record.Fields["Quantity"].ToString()) + quantityChange;
-                fields.FieldsCollection["Pending"] = int.Parse(record.Fields["Pending"].ToString()) - originalRequestQuantity;
-                UpdateInventoryRecord(componentsFieldName, record.Id, fields);
-                LogInventoryEntry("Inventory Request completed for " + componentName, record.Id, quantityChange);
+                component.Quantity = component.Quantity + quantityChange;
+                component.Pending = component.Pending - originalRequestQuantity;
+                UpdateComponentRecord(component);
+                LogInventoryEntry("Inventory Request completed for " + component.Name, component.Record.Id, quantityChange);
                 return true;
             }
             return false;
         }
 
-        private void UpdateInventoryFromComponentData(ItemComponentData component)
+        public InventoryComponent GetComponentByName(string componentName, bool exactMatch = true)
         {
-            var fields = new Fields();
-           // fields = component.Quantity
+            string offset = "";
+            string query;
+            if (exactMatch)
+                query = "{" + nameKey + "} = '" + componentName + "'";
+            else
+                query = "SEARCH(LOWER('" + componentName + "'),LOWER({" + nameKey + "})) > 0";
+                
+            Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(componentsFieldName, offset, null, query);
+            //if there are multiple matches, don't try to guess
+            var record = task.Result.Records?.Single();
+            if (record != null)
+            {
+                return new InventoryComponent(record);
+            }
+            return null;
         }
-        private bool UpdateInventoryRecord(string tableName, string id, Fields fieldsToUpdate)
-        {
 
-            var task = _invAirtableBase.UpdateRecord(tableName, fieldsToUpdate, id);
+        public void UpdateComponentRecord(InventoryComponent component)
+        {
+            var currentRecord = RetreiveComponentsRecord(component.Record.Id);
+            var task = _invAirtableBase.UpdateRecord(componentsFieldName, component.UpdatedFields, component.Record.Id);
             var response = task.Result;
-
-            return response.Success;
         }
+
 
         public bool UpdateCompletedOrderComponentEntries(string orderID)
         {
@@ -164,7 +210,7 @@ namespace AirtableClientWrapper
             var response = task.Result;
         }
 
-        public ItemData FindItemRecord(string searchString, string color = null, int size = 0)
+        public InventoryProduct FindItemRecord(string searchString, string color = null, int size = 0)
         {
             var dict = GetMaterialsLookup();
 
@@ -209,13 +255,13 @@ namespace AirtableClientWrapper
                         {
                             break;
                         }
-                        return new ItemData(record);
+                        return new InventoryProduct(record);
                     }
                 }
             }
             return null;
         }
-        public ItemData FindItemRecordBySKU(string SKU)
+        public InventoryProduct FindItemRecordBySKU(string SKU)
         {
             var dict = GetMaterialsLookup();
             if (!string.IsNullOrEmpty(SKU))
@@ -227,7 +273,7 @@ namespace AirtableClientWrapper
                     {
                         if (SKU.ToLowerInvariant().Equals(record.Fields[skuKey].ToString().ToLowerInvariant()))
                         {
-                            return new ItemData(record);
+                            return new InventoryProduct(record);
                         }
                     }
                 }

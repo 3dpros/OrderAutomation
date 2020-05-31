@@ -29,6 +29,7 @@ namespace AirtableClientWrapper
         public void Dispose()
             {
                 _mainAirtableBase.Dispose();
+                _invAirtableBase.Dispose();
             }
     }
 }

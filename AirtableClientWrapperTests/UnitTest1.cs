@@ -19,34 +19,16 @@ namespace AirtableClientWrapperTests
             OrderData result;
             AirtableOrders ATbase = new AirtableOrders();
             result = ATbase.GetRecordByOrderID("1124", out _);
+            Assert.NotNull(result);
 
         }
 
-        [Fact]
-        public void getAllItemsInView()
-        {
-            AirtableOrders ATbase = new AirtableOrders();
-            var orders = ATbase.GetAllRecordsInView("Etsy Shipped Last Week", new List<string>() {"weight", "kettlebell", "squat", "dumbbell"});
-            var emailList = new List<string>();
-            var bccLine = "";
-            foreach (var order in orders)
-            {
-                if(!string.IsNullOrEmpty(order.OptinSentType))
-                {
-                    break;
-                }
-                order.OptinSentType = "fitness";
-                ATbase.UpdateOrderRecord(order);
-                emailList.Add(order.CustomerEmail);
-                bccLine = string.Join(",", emailList);
-            }
-        }
         [Fact]
         public void CreateAndUpdateOrder()
         {
             AirtableOrders ATbase = new AirtableOrders();
-
-            var order = ATbase.newOrderData("1234567");
+            string orderID = "1234567";
+            var order = ATbase.newOrderData(orderID);
 
             order.Notes = "this is a test order";
             order.ShippingCost = 10.21;
@@ -57,14 +39,27 @@ namespace AirtableClientWrapperTests
 
             ATbase.CreateOrderRecord(order);
 
-            order.MaterialCost = 12.34;
             order.TotalPrice = 504.23;
             order.ValueOfInventory = 233.04;
 
             //            order.ShipDate = DateTime.Now;
+            var retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
+
+            Assert.Equal(order.Notes, retrievedRecord.Notes);
+            Assert.Equal(order.ShippingCost, retrievedRecord.ShippingCost);
+            Assert.Equal(order.Description, retrievedRecord.Description);
+            Assert.Equal(order.Channel, retrievedRecord.Channel);
+            Assert.Equal(order.AsanaTaskID, retrievedRecord.AsanaTaskID);
+            Assert.NotEqual(order.TotalPrice, retrievedRecord.TotalPrice);
+
             ATbase.CreateOrderRecord(order, true);
 
+            retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
 
+            Assert.Equal(order.TotalPrice, retrievedRecord.TotalPrice);
+            Assert.Equal(order.ValueOfInventory, retrievedRecord.ValueOfInventory);
+
+            ATbase.DeleteOrderRecord(order);
         }
 
         class EmailData
@@ -81,18 +76,45 @@ namespace AirtableClientWrapperTests
         [Fact]
         public void UpdateComponentQuantityByName_test()
         {
+            var componentName = "ZZZ - Dummy Component";
             var sut = new AirtableItemLookup();
-            sut.UpdateComponentQuantityByName("ZZZ - Dummy Item", 23, 22);
+
+            var retrievedcomponent = sut.GetComponentByName(componentName);
+            var originalQuantity = retrievedcomponent.Quantity;
+            var originalPending = retrievedcomponent.Pending;
+
+            sut.UpdateComponentQuantityByName(componentName, 4, 10);
+            retrievedcomponent = sut.GetComponentByName(componentName);
+
+            Assert.Equal(retrievedcomponent.Quantity, originalQuantity + 4);
+            Assert.Equal(retrievedcomponent.Pending, originalPending - 10);
+       }
+        [Fact]
+        public void UpdateComponentForInventoryRequest_test()
+        {
+            var componentName = "ZZZ - Dummy Component";
+            var sut = new AirtableItemLookup();
+
+            var retrievedcomponent = sut.GetComponentByName(componentName);
+
+            var originalQuantity = retrievedcomponent.Quantity;
+            var originalPending = retrievedcomponent.Pending;
+
+            sut.LogInventoryRequestCreation(retrievedcomponent, retrievedcomponent.NumberOfBatches * retrievedcomponent.BatchSize);
+            retrievedcomponent = sut.GetComponentByName(componentName);
+
+            Assert.Equal(originalQuantity, retrievedcomponent.Quantity);
+            Assert.Equal(originalPending + retrievedcomponent.NumberOfBatches * retrievedcomponent.BatchSize, retrievedcomponent.Pending);
         }
 
-        [Fact]
+        //[Fact]
         public void UpdateCompletedOrderComponentEntries_test()
         {
             var sut = new AirtableItemLookup();
             sut.UpdateCompletedOrderComponentEntries("21");
         }
 
-        [Fact]
+      //  [Fact]
         public void parseOldEtsyEmails()
         {
             AirtableOrders ATbase = new AirtableOrders();
@@ -155,7 +177,7 @@ namespace AirtableClientWrapperTests
         }
 
 
-        [Fact]
+      //  [Fact]
         public void CreateExpenses()
         {
             var ATbase = new AirtableExpenses();
@@ -174,9 +196,20 @@ namespace AirtableClientWrapperTests
         public void ItemInventory()
         {
             var materials = new AirtableItemLookup();
-            var components = new List<ItemComponentData>();
-            var record = materials.FindItemRecord("Printed Crochet Blocking Board - extra", "purple", 6);
-           bool value = materials.UpdateInventoryCountForTransaction(record, 0, out components);
+            var components = new List<InventoryComponent>();
+            var product = materials.FindItemRecord("zzz - dummy item", "purple", 6);
+            var componentData = materials.GetComponentByName("ZZZ - Dummy Component");
+            var originalQuantity = componentData.Quantity;
+
+            bool value = materials.UpdateInventoryCountForTransaction(product, 10, out components);
+
+            Assert.Single(components);
+            Assert.Equal("ZZZ - Dummy Component", components[0].Name);
+
+            componentData = materials.GetComponentByName("ZZZ - Dummy Component");
+
+            Assert.Equal(originalQuantity - 10, componentData.Quantity);
+
 
         }
 
@@ -186,21 +219,43 @@ namespace AirtableClientWrapperTests
         {
             
             var materials = new AirtableItemLookup();
-            var components = new List<ItemComponentData>();
-            var record = materials.FindItemRecord("zzz - dummy item");
-            bool value = materials.UpdateInventoryCountForTransaction(record, 1, out components);
-            var test = components[0].NumberOfBatches;
-            
+            var product = materials.FindItemRecord("zzz - dummy item");
+            var components = materials.GetComponentByName("ZZZ - Dummy Component");
+
+            Assert.Equal("www.dummyurl.com", product.BaseUrl);
+
+            List<string> printers;
+            string preferredPrinter;
+            bool value = materials.GetPotentialPrintersList(product, out printers, out preferredPrinter);
+
+            Assert.True(printers.Count > 0);
+            Assert.Equal("Kyle Perkuhn", preferredPrinter);
+            value = materials.GetPotentialPrintersList(components, out printers, out preferredPrinter);
+
+            Assert.True(printers.Count > 0);
+            Assert.Equal("Al Billington", preferredPrinter);
         }
 
-        [Fact]
 
-        public void ItemInventoryBySKU()
+
+
+        public void getAllItemsInView()
         {
-            var materials = new AirtableItemLookup();
-
-       //     bool value = materials.UpdateInventoryQuantityForTransactionBySKU(out var materialCost, "WeightPlateOrnament_silver", 3);
-
+            AirtableOrders ATbase = new AirtableOrders();
+            var orders = ATbase.GetAllRecordsInView("Etsy Shipped Last Week", new List<string>() { "weight", "kettlebell", "squat", "dumbbell" });
+            var emailList = new List<string>();
+            var bccLine = "";
+            foreach (var order in orders)
+            {
+                if (!string.IsNullOrEmpty(order.OptinSentType))
+                {
+                    break;
+                }
+                order.OptinSentType = "fitness";
+                ATbase.UpdateOrderRecord(order);
+                emailList.Add(order.CustomerEmail);
+                bccLine = string.Join(",", emailList);
+            }
         }
     }
 }
