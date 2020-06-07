@@ -1,10 +1,10 @@
-﻿using NBS.AsanaNet;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using AsanaNet;
 
 namespace AsanaAPI
 {
@@ -98,7 +98,6 @@ namespace AsanaAPI
                 var project = GetProjectByName(proj);
                 task.AddProject(project, _asanaRef).Wait();
             }
-
         }
         static void errorCallback(string s1, string s2, string s3)
         {

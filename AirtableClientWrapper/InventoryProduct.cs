@@ -22,6 +22,7 @@ namespace AirtableClientWrapper
 
         private const string CostKey = "Cost";
         private const string NameKey = "Name";
+        private const string UniqueNameKey = "UniqueName";
         private const string URLKey = "Designer URL Base";
         private readonly string maximumInventoryQuantityKey = "Maximum Inventory Quantity";
 
@@ -44,6 +45,17 @@ namespace AirtableClientWrapper
                 if (Record.Fields.ContainsKey(NameKey))
                 {
                     return Record.Fields[NameKey].ToString();
+                }
+                return "";
+            }
+        }
+        public string UniqueName
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey(UniqueNameKey))
+                {
+                    return Record.Fields[UniqueNameKey].ToString();
                 }
                 return "";
             }

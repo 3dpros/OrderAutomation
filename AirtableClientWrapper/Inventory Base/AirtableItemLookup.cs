@@ -17,7 +17,8 @@ namespace AirtableClientWrapper
 
     public class AirtableItemLookup : AirtableBaseTable
     {
-        private readonly string TableName = "Products Database";
+        private readonly string ProductsTableName = "Products Database";
+        
         private readonly string nameKey = "Name";
         private readonly string logFieldName = "Log";
         private readonly string skuKey = "SKU";
@@ -34,7 +35,7 @@ namespace AirtableClientWrapper
         public string GetRecordName(string recordID)
         {
 
-            Task<AirtableRetrieveRecordResponse> task = _invAirtableBase.RetrieveRecord(TableName, recordID);
+            Task<AirtableRetrieveRecordResponse> task = _invAirtableBase.RetrieveRecord(ProductsTableName, recordID);
             var response = task.Result;
 
             return response.Record.Fields[nameKey].ToString();
@@ -51,7 +52,7 @@ namespace AirtableClientWrapper
         {
             var recordsList = new List<AirtableRecord>();
             
-                Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(TableName);
+                Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(ProductsTableName);
                 var response = task.Result;
 
                 foreach (var record in response.Records)
@@ -210,6 +211,22 @@ namespace AirtableClientWrapper
             var response = task.Result;
         }
 
+        public void AddProductRecord(string name, string color = "", int sizeInInches = 0)
+        {
+            if (FindItemRecord(name) == null)
+            {
+                Fields fields = new Fields();
+                fields.FieldsCollection.Add("Name", name);
+                fields.FieldsCollection.Add("Color", color);
+                if (sizeInInches > 0)
+                {
+                    fields.FieldsCollection.Add("Size", sizeInInches);
+                }
+                var task = _invAirtableBase.CreateRecord(ProductsTableName, fields);
+                var response = task.Result;
+            }
+        }
+
         public InventoryProduct FindItemRecord(string searchString, string color = null, int size = 0)
         {
             var dict = GetMaterialsLookup();
@@ -279,6 +296,21 @@ namespace AirtableClientWrapper
                 }
             }
             return null;
+        }
+
+        public Dictionary<string, string> GetItemsLookup()
+        {
+            Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(ProductsTableName);
+            var response = task.Result;
+            var dict = new Dictionary<string, string>();
+            string key = "UniqueName";
+
+            foreach (var record in response.Records)
+            {
+                if (record.Fields.ContainsKey(key))
+                    dict.Add(record.Id, record.Fields[key].ToString());
+            }
+            return dict;
         }
 
     }

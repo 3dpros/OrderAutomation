@@ -26,13 +26,13 @@ namespace AirtableClientWrapperTests
         [Fact]
         public void CreateAndUpdateOrder()
         {
-            AirtableOrders ATbase = new AirtableOrders();
+            AirtableOrders ATbase = new AirtableOrders(true);
             string orderID = "1234567";
             var order = ATbase.newOrderData(orderID);
 
             order.Notes = "this is a test order";
             order.ShippingCost = 10.21;
-            order.Description = "test order";
+            order.Description = "test\n order";
 
             order.Channel = "Direct";
             order.AsanaTaskID = "3242342634652352";
@@ -58,6 +58,33 @@ namespace AirtableClientWrapperTests
 
             Assert.Equal(order.TotalPrice, retrievedRecord.TotalPrice);
             Assert.Equal(order.ValueOfInventory, retrievedRecord.ValueOfInventory);
+
+           ATbase.DeleteOrderRecord(order);
+        }
+
+        [Fact]
+        public void CreateAndUpdateOrderTracking()
+        {
+            AirtableOrderTracking ATbase = new AirtableOrderTracking();
+            string orderID = "1234567";
+            var order = ATbase.NewOrderTrackingData(orderID);
+
+            order.Notes = "this is a test order";
+            order.Description = "test order";
+            order.PrintOperator = "";
+            order.IncludedItems = new List<string> { "Shotgun Shell Ornament", "zzz - dummy item" };
+
+            ATbase.CreateOrderRecord(order);
+
+            //            order.ShipDate = DateTime.Now;
+            var retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
+
+            Assert.Equal(order.Notes, retrievedRecord.Notes);
+            Assert.Equal(order.Description, retrievedRecord.Description);
+
+            ATbase.CreateOrderRecord(order, true);
+
+            retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
 
             ATbase.DeleteOrderRecord(order);
         }
@@ -106,7 +133,12 @@ namespace AirtableClientWrapperTests
             Assert.Equal(originalQuantity, retrievedcomponent.Quantity);
             Assert.Equal(originalPending + retrievedcomponent.NumberOfBatches * retrievedcomponent.BatchSize, retrievedcomponent.Pending);
         }
-
+        [Fact]
+        public void AddProductRecord_test()
+        {
+            var sut = new AirtableItemLookup();
+            sut.AddProductRecord("new untracked product");
+        }
         //[Fact]
         public void UpdateCompletedOrderComponentEntries_test()
         {
@@ -209,6 +241,7 @@ namespace AirtableClientWrapperTests
             componentData = materials.GetComponentByName("ZZZ - Dummy Component");
 
             Assert.Equal(originalQuantity - 10, componentData.Quantity);
+         //   Assert.Equal(componentData.IsBelowThreshhold())
 
 
         }

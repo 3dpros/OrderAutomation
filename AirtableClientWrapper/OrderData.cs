@@ -50,6 +50,7 @@ namespace AirtableClientWrapper
         public string AsanaTaskID { get; set; }
         public string OptinSentType { get; set; }
         public double ValueOfInventory { get; set; }
+        public string OrderURL { get; set; }
 
 
         public OrderData(string orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup)

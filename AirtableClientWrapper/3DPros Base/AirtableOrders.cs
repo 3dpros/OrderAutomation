@@ -11,16 +11,20 @@ namespace AirtableClientWrapper
 {
     public class AirtableOrders : AirtableBaseTable
     {
-        private readonly string TableName = "Orders";
+        private string TableName = "Orders";
         private readonly string orderIDKey = "order ID";
-        private AirtablePayment _paymentTable;
+        private AirtablePayment _namesTable;
         private AirtableChannels _channelTable;
 
 
-        public AirtableOrders() : base()
+        public AirtableOrders(bool test = false) : base()
         {
-            _paymentTable = new AirtablePayment();
+            _namesTable = new AirtablePayment();
             _channelTable = new AirtableChannels();
+            if(test)
+            {
+                TableName = "Orders Test";
+            }
         }
 
 
@@ -43,7 +47,7 @@ namespace AirtableClientWrapper
             {
                 var record = response.Records.FirstOrDefault();
                 recordID = record.Id;
-                return new OrderData(record.Fields, _paymentTable.GetNamesLookup(), _channelTable.GetNamesLookup());
+                return new OrderData(record.Fields, _namesTable.GetNamesLookup(), _channelTable.GetNamesLookup());
             }
             return null;
         }
@@ -56,7 +60,7 @@ namespace AirtableClientWrapper
             var orders = new List<OrderData>();
             foreach(var record in response.Records)
             {
-                var orderData = new OrderData(record.Fields, _paymentTable.GetNamesLookup(), _channelTable.GetNamesLookup());
+                var orderData = new OrderData(record.Fields, _namesTable.GetNamesLookup(), _channelTable.GetNamesLookup());
                 bool match = false;
                 foreach (string searchString in nameSearchStrings)
                 {
@@ -106,31 +110,28 @@ namespace AirtableClientWrapper
 
                 return task.Result.Success;
             }
-            return false;
-
         }
         public bool UpdateOrderRecord(OrderData order)
         {
             Fields fields = new Fields();
             fields.FieldsCollection = order.ToDictionary();
-            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out string orderID);
-            var task = _mainAirtableBase.UpdateRecord(TableName, fields, orderID);
+            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out string recordID);
+            var task = _mainAirtableBase.UpdateRecord(TableName, fields, recordID);
             var response = task.Result;
             return task.Result.Success;
         }
 
         public bool DeleteOrderRecord(OrderData order)
         {
-            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out string orderID);
-            var task = _mainAirtableBase.DeleteRecord(TableName, orderID);
+            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out string recordID);
+            var task = _mainAirtableBase.DeleteRecord(TableName, recordID);
             var response = task.Result;
             return task.Result.Success;
         }
 
-
         public OrderData newOrderData(string orderID)
         {
-            OrderData a = new OrderData(orderID, _paymentTable.GetNamesLookup(), _channelTable.GetNamesLookup());
+            OrderData a = new OrderData(orderID, _namesTable.GetNamesLookup(), _channelTable.GetNamesLookup());
             if(a is null)
             { throw new ArgumentNullException(); }
             return a;

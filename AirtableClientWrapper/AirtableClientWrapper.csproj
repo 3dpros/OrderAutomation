@@ -53,17 +53,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Inventory Base\AirtablePrinters.cs" />
     <Compile Include="AirtableBaseTable.cs" />
-    <Compile Include="AirtableOrders.cs" />
-    <Compile Include="AirtableExpenses.cs" />
-    <Compile Include="AirtableItemLookup.cs" />
-    <Compile Include="AirtableChannels.cs" />
-    <Compile Include="AirtablePayment.cs" />
+    <Compile Include="3DPros Base\AirtableOrders.cs" />
+    <Compile Include="3DPros Base\AirtableExpenses.cs" />
+    <Compile Include="Inventory Base\AirtableOrderTracking.cs" />
+    <Compile Include="Inventory Base\AirtableItemLookup.cs" />
+    <Compile Include="3DPros Base\AirtableChannels.cs" />
+    <Compile Include="3DPros Base\AirtablePayment.cs" />
+    <Compile Include="AirtableKeys.cs" />
     <Compile Include="InventoryComponent.cs" />
     <Compile Include="InventoryProduct.cs" />
     <Compile Include="ExpensesData.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="OrderTrackingData.cs" />
     <Compile Include="OrderData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -71,5 +75,6 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
