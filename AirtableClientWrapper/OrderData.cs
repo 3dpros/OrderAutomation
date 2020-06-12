@@ -71,7 +71,7 @@ namespace AirtableClientWrapper
             Notes = fields.GetString(NotesKey);
             TotalPrice = NumberParseOrDefault(fields.GetString(TotalPaymentKey));
             ShippingCost = NumberParseOrDefault(fields.GetString(ActualShippingKey));
-            ShippingCharge = NumberParseOrDefault(fields.GetString(ActualShippingKey));
+            ShippingCharge = NumberParseOrDefault(fields.GetString(ShippingChargeKey));
             SalesTax = NumberParseOrDefault(fields.GetString(SalesTaxKey));
             MaterialCost = NumberParseOrDefault(fields.GetString(MaterialCostKey));
             if (fields.GetString(DueDateKey) != "")

@@ -10,6 +10,7 @@ namespace AirtableClientWrapper
     {
         public const string OrderIDKey = "Order ID";
         public const string OrderValueKey = "Order Value";
+        public const string StageKey = "Stage";
         public const string DescriptionKey = "Short Description";
         public const string NotesKey = "Notes";
         public const string RushKey = "Priority";
@@ -19,7 +20,9 @@ namespace AirtableClientWrapper
         public const string ShipperKey = "Shipping";
         public const string ShippedDateKey = "Ship Date";
         public const string OrderURLKey = "Order URL";
+        public const string DesignerURLKey = "Designer URL";
         public const string IncludedItemsKey = "Included Items";
+
 
 
         private Dictionary<string, string> _NameLookup;
@@ -28,7 +31,7 @@ namespace AirtableClientWrapper
 
         public string OrderID { get; set; }
         public double OrderValue { get; set; }
-
+        public string Stage { get; set; }
         public string Description { get; set; }
         public string Notes { get; set; }
         public bool Priority { get; set; }
@@ -39,7 +42,10 @@ namespace AirtableClientWrapper
         public string PrintOperator { get; set; }
         public string Shipper { get; set; }
         public string OrderURL { get; set; }
+        public string DesignerURL { get; set; }
+
         public List<string> IncludedItems { get; set; } = new List<string>();
+
 
 
         public OrderTrackingData(string orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> itemsLookup)
@@ -63,7 +69,8 @@ namespace AirtableClientWrapper
         public OrderTrackingData(Dictionary<string, object> fields, Dictionary<string, string> nameLookup, Dictionary<string, string> itemsLookup) : this(fields.GetString(OrderIDKey), nameLookup, itemsLookup)
         {
             Description = fields.GetString(DescriptionKey);
-            Notes = fields.GetString(NotesKey);
+            Notes = fields.GetString(NotesKey).Trim();
+            Stage = fields.GetString(StageKey);
             if (fields.GetString(DueDateKey) != "")
             { DueDate = DateTime.Parse(fields.GetString(DueDateKey)); }
             if (fields.GetString(ShippedDateKey) != "")
@@ -72,8 +79,11 @@ namespace AirtableClientWrapper
             IsInventoryRequest = (fields.GetString(InventoryRequestKey).ToLower() == "true");
             PrintOperator = GetNameFromIdIfPresent(fields.GetString(PrintOperatorKey), _NameLookup);
             Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
-            OrderURL = GetNameFromIdIfPresent(fields.GetString(OrderURLKey), _NameLookup);
+            OrderURL = fields.GetString(OrderURLKey);
+            DesignerURL = fields.GetString(DesignerURLKey);
             OrderValue = NumberParseOrDefault(fields.GetString(OrderValueKey));
+           // IncludedItems - need to make this readable
+
 
         }
 
@@ -137,7 +147,8 @@ namespace AirtableClientWrapper
             string[] shipperID = GetIdFromNameIfPresent(Shipper, _NameLookup)?.ToArray();
             string[] itemIDs = GetIdFromNameIfPresent(IncludedItems, _ItemsLookup)?.ToArray();
             
-            orderDictionary.AddIfNotNull(OrderIDKey, OrderID.ToString());
+            orderDictionary.AddIfNotNull(OrderIDKey, OrderID);
+            orderDictionary.AddIfNotNull(StageKey, Stage);
             orderDictionary.AddIfNotNull(OrderValueKey, OrderValue);
             orderDictionary.AddIfNotNull(DescriptionKey, Description);
             orderDictionary.AddIfNotNull(NotesKey, Notes);
@@ -153,8 +164,13 @@ namespace AirtableClientWrapper
             orderDictionary.AddIfNotNull(InventoryRequestKey, IsInventoryRequest);
             orderDictionary.AddIfNotNull(PrintOperatorKey, printOperatorID);
             orderDictionary.AddIfNotNull(ShipperKey, shipperID);
-            orderDictionary.AddIfNotNull(IncludedItemsKey, itemIDs);
+            if (itemIDs.Length > 0)
+            {
+                orderDictionary.AddIfNotNull(IncludedItemsKey, itemIDs);
+            }
             orderDictionary.AddIfNotNull(OrderURLKey, OrderURL);
+            orderDictionary.AddIfNotNull(DesignerURLKey, DesignerURL);
+
 
             return orderDictionary;
         }

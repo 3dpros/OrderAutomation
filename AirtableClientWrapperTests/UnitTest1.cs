@@ -255,6 +255,7 @@ namespace AirtableClientWrapperTests
             var product = materials.FindItemRecord("zzz - dummy item");
             var components = materials.GetComponentByName("ZZZ - Dummy Component");
 
+            Assert.Equal("Dummy Item (test)", product.DisplayName);
             Assert.Equal("www.dummyurl.com", product.BaseUrl);
 
             List<string> printers;
