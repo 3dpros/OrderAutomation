@@ -51,16 +51,21 @@ namespace AirtableClientWrapper
         private List<AirtableRecord> GetMaterialsLookup()
         {
             var recordsList = new List<AirtableRecord>();
-            
-                Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(ProductsTableName);
+            var offset = "";
+            while(offset != null)
+             { 
+                Task < AirtableListRecordsResponse > task = _invAirtableBase.ListRecords(ProductsTableName, offset);
                 var response = task.Result;
+                offset = task.Result.Offset;
 
                 foreach (var record in response.Records)
                 {
                     if (record.Fields.ContainsKey(nameKey))
-                    recordsList.Add(record);
+                    {
+                        recordsList.Add(record);
+                    }
                 }
-            
+            }
             return recordsList;
         }
 
@@ -167,7 +172,11 @@ namespace AirtableClientWrapper
                 query = "SEARCH(LOWER('" + componentName + "'),LOWER({" + nameKey + "})) > 0";
                 
             Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(componentsFieldName, offset, null, query);
-            //if there are multiple matches, don't try to guess
+            //if there are multiple matches in an inexact match, try an exact match instead
+            if(task.Result.Records?.Count() > 1 && !exactMatch)
+            {
+                return this.GetComponentByName(componentName, true);
+            }
             var record = task.Result.Records?.Single();
             if (record != null)
             {
@@ -211,21 +220,42 @@ namespace AirtableClientWrapper
             var response = task.Result;
         }
 
-        public void AddProductRecord(string name, string color = "", int sizeInInches = 0)
+        public InventoryProduct AddProductRecord(string name, string color = "", int sizeInInches = 0, string imageURL = "")
         {
             if (FindItemRecord(name) == null)
             {
                 Fields fields = new Fields();
                 fields.FieldsCollection.Add("Name", name);
                 fields.FieldsCollection.Add("Color", color);
+
                 if (sizeInInches > 0)
                 {
                     fields.FieldsCollection.Add("Size", sizeInInches);
                 }
                 var task = _invAirtableBase.CreateRecord(ProductsTableName, fields);
                 var response = task.Result;
+                return new InventoryProduct(task.Result.Record);
             }
+            return null;
         }
+        public void AddImageToProduct(InventoryProduct product, string imageURL = "")
+        {
+            //Task<AirtableRetrieveRecordResponse> task = _invAirtableBase.RetrieveRecord(ProductsTableName, product.Record.Id);
+            //var response = task.Result;
+
+            Fields mainField = new Fields();
+            Fields imgField = new Fields();
+            imgField.AddField("url", imageURL);
+            mainField.AddField("Image", imgField);
+
+
+            var updateTask = _invAirtableBase.UpdateRecord(ProductsTableName, mainField, product.Record.Id);
+            var updateResponse = updateTask.Result;
+
+        }
+
+
+
 
         public InventoryProduct FindItemRecord(string searchString, string color = null, int size = 0)
         {
@@ -298,17 +328,20 @@ namespace AirtableClientWrapper
             return null;
         }
 
-        public Dictionary<string, string> GetItemsLookup()
+        public Dictionary<string, string> GetProductsLookup()
         {
             Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(ProductsTableName);
             var response = task.Result;
             var dict = new Dictionary<string, string>();
+
             string key = "UniqueName";
 
             foreach (var record in response.Records)
             {
                 if (record.Fields.ContainsKey(key))
+                {
                     dict.Add(record.Id, record.Fields[key].ToString());
+                }               
             }
             return dict;
         }

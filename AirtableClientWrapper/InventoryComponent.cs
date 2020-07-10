@@ -104,6 +104,11 @@ namespace AirtableClientWrapper
                 updateRecord(pendingFieldName, value);
             }
         }
+        public string id { get
+            {
+                return Record.Id;
+             }
+        }
 
         public string Name
         {

@@ -40,7 +40,7 @@ namespace AirtableClientWrapper
             {
                 var record = response.Records.FirstOrDefault();
                 recordID = record.Id;
-                return new OrderTrackingData(record.Fields, _namesTable.GetNamesLookup(), _itemsTable.GetItemsLookup());
+                return new OrderTrackingData(record.Fields, _namesTable.GetNamesLookup(), _itemsTable.GetProductsLookup());
             }
             return null;
         }
@@ -117,7 +117,7 @@ namespace AirtableClientWrapper
 
         public OrderTrackingData NewOrderTrackingData(string orderID)
         {
-            OrderTrackingData a = new OrderTrackingData(orderID, _namesTable.GetNamesLookup(), _itemsTable.GetItemsLookup());
+            OrderTrackingData a = new OrderTrackingData(orderID, _namesTable.GetNamesLookup(), _itemsTable.GetProductsLookup());
             if (a is null)
             { throw new ArgumentNullException(); }
             return a;
@@ -125,7 +125,7 @@ namespace AirtableClientWrapper
 
         public OrderTrackingData OrderDataToOrderTrackingData(OrderData orderData)
         {
-            OrderTrackingData orderTrackingData = new OrderTrackingData(orderData.OrderID, _namesTable.GetNamesLookup(), _itemsTable.GetItemsLookup());
+            OrderTrackingData orderTrackingData = new OrderTrackingData(orderData.OrderID, _namesTable.GetNamesLookup(), _itemsTable.GetProductsLookup());
             orderTrackingData.Description = orderData.Description;
             orderTrackingData.Notes = orderData.Notes;
             orderTrackingData.PrintOperator = orderData.PrintOperator;

@@ -39,6 +39,18 @@ namespace AirtableClientWrapper
             }
         }
 
+        public string Image
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey("Image"))
+                {
+                    return Record.Fields["Image"].ToString();
+                }
+                return "";
+            }
+        }
+
         public string ItemName
         {
             get
@@ -109,6 +121,19 @@ namespace AirtableClientWrapper
                 if (Record.Fields.ContainsKey(SizeKey))
                 {
                     return int.Parse(Record.Fields[SizeKey].ToString());
+                }
+                return 0;
+            }
+        }
+
+        private const string ProcessingTimeKey = "Processing Time";
+        public int ProcessingTime
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey(ProcessingTimeKey))
+                {
+                    return int.Parse(Record.Fields[ProcessingTimeKey].ToString());
                 }
                 return 0;
             }

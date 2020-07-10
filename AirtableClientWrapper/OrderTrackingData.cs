@@ -22,6 +22,7 @@ namespace AirtableClientWrapper
         public const string OrderURLKey = "Order URL";
         public const string DesignerURLKey = "Designer URL";
         public const string IncludedItemsKey = "Included Items";
+        public const string IncludedComponentsKey = "Component";
 
 
 
@@ -45,7 +46,7 @@ namespace AirtableClientWrapper
         public string DesignerURL { get; set; }
 
         public List<string> IncludedItems { get; set; } = new List<string>();
-
+        public string IncludedComponentId { get; set; }
 
 
         public OrderTrackingData(string orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> itemsLookup)
@@ -146,7 +147,11 @@ namespace AirtableClientWrapper
             string[] printOperatorID = GetIdFromNameIfPresent(PrintOperator, _NameLookup)?.ToArray();
             string[] shipperID = GetIdFromNameIfPresent(Shipper, _NameLookup)?.ToArray();
             string[] itemIDs = GetIdFromNameIfPresent(IncludedItems, _ItemsLookup)?.ToArray();
-            
+            if (!string.IsNullOrEmpty(IncludedComponentId))
+            {
+                orderDictionary.AddIfNotNull(IncludedComponentsKey, new string[] { IncludedComponentId });
+            }
+
             orderDictionary.AddIfNotNull(OrderIDKey, OrderID);
             orderDictionary.AddIfNotNull(StageKey, Stage);
             orderDictionary.AddIfNotNull(OrderValueKey, OrderValue);
@@ -169,8 +174,7 @@ namespace AirtableClientWrapper
                 orderDictionary.AddIfNotNull(IncludedItemsKey, itemIDs);
             }
             orderDictionary.AddIfNotNull(OrderURLKey, OrderURL);
-            orderDictionary.AddIfNotNull(DesignerURLKey, DesignerURL);
-
+            orderDictionary.AddIfNotNull(DesignerURLKey, DesignerURL);        
 
             return orderDictionary;
         }

@@ -73,6 +73,7 @@ namespace AirtableClientWrapperTests
             order.Description = "test order";
             order.PrintOperator = "";
             order.IncludedItems = new List<string> { "Shotgun Shell Ornament", "zzz - dummy item" };
+            order.DesignerURL = "test";
 
             ATbase.CreateOrderRecord(order);
 
@@ -137,7 +138,16 @@ namespace AirtableClientWrapperTests
         public void AddProductRecord_test()
         {
             var sut = new AirtableItemLookup();
-            sut.AddProductRecord("new untracked product");
+            
+            sut.AddProductRecord("new untracked product","",0, "https://i.etsystatic.com/14966514/d/il/dbb99f/2210030945/il_75x75.2210030945_k8h3.jpg?version=0");
+        }
+        [Fact]
+
+        public void AddImage_test()
+        {
+            var sut = new AirtableItemLookup();
+            var product = sut.FindItemRecord("zzz - dummy item", "", 0);
+            sut.AddImageToProduct(product, "https://i.etsystatic.com/14966514/d/il/dbb99f/2210030945/il_75x75.2210030945_k8h3.jpg?version=0");
         }
         //[Fact]
         public void UpdateCompletedOrderComponentEntries_test()
@@ -229,6 +239,7 @@ namespace AirtableClientWrapperTests
         {
             var materials = new AirtableItemLookup();
             var components = new List<InventoryComponent>();
+            var producta = materials.FindItemRecord("Crochet Blocking Board", "", 9);
             var product = materials.FindItemRecord("zzz - dummy item", "purple", 6);
             var componentData = materials.GetComponentByName("ZZZ - Dummy Component");
             var originalQuantity = componentData.Quantity;
