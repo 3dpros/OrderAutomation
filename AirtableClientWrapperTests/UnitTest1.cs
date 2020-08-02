@@ -22,6 +22,18 @@ namespace AirtableClientWrapperTests
             Assert.NotNull(result);
 
         }
+        [Fact]
+        public void CreateAndUpdateExpense()
+        {
+            var ATbase = new AirtableExpenses();
+            var data = new ExpensesData("3D Printer Silk Silver PLA Filament 1.75mm 1KG 2.2LBS Spool 3D Printing Shiny Metallic Shine Silky Materials HZST3D")
+            {
+                Value = 1.2,
+                Date = DateTime.Now
+            };
+            ATbase.CreateExpensesRecord(data);
+        }
+
 
         [Fact]
         public void CreateAndUpdateOrder()
@@ -36,6 +48,7 @@ namespace AirtableClientWrapperTests
 
             order.Channel = "Direct";
             order.AsanaTaskID = "3242342634652352";
+            order.PrintOperator = "Kyle Perkuhn";
 
             ATbase.CreateOrderRecord(order);
 
@@ -74,6 +87,7 @@ namespace AirtableClientWrapperTests
             order.PrintOperator = "";
             order.IncludedItems = new List<string> { "Shotgun Shell Ornament", "zzz - dummy item" };
             order.DesignerURL = "test";
+            order.RequestedQuantity = 23;
 
             ATbase.CreateOrderRecord(order);
 
@@ -148,6 +162,13 @@ namespace AirtableClientWrapperTests
             var sut = new AirtableItemLookup();
             var product = sut.FindItemRecord("zzz - dummy item", "", 0);
             sut.AddImageToProduct(product, "https://i.etsystatic.com/14966514/d/il/dbb99f/2210030945/il_75x75.2210030945_k8h3.jpg?version=0");
+        }
+
+       [Fact]
+        public void monthlyTest()
+        {
+            var monthly = new AirtableMonthly();
+            var id = monthly.GetLatestMonthlyID();
         }
         //[Fact]
         public void UpdateCompletedOrderComponentEntries_test()

@@ -26,6 +26,7 @@ namespace AirtableClientWrapper
         public const string OptinSentTypeKey = "Optin Sent Type";
         public const string SalesTaxKey = "Sales Tax Charged";
         public const string ValueOfInventoryKey = "Value of Inventory Products";
+        public const string AmountRefundedKey = "Amount Refunded";
 
 
         private Dictionary<string, string> _NameLookup;
@@ -51,6 +52,7 @@ namespace AirtableClientWrapper
         public string OptinSentType { get; set; }
         public double ValueOfInventory { get; set; }
         public string OrderURL { get; set; }
+        public double AmountRefunded { get; set; }
 
 
         public OrderData(string orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> channelLookup)
@@ -85,7 +87,7 @@ namespace AirtableClientWrapper
             AsanaTaskID = fields.GetString(AsanaTaskIDKey);
             OptinSentType = fields.GetString(OptinSentTypeKey);
             ValueOfInventory = NumberParseOrDefault(fields.GetString(ValueOfInventoryKey));
-
+            AmountRefunded = NumberParseOrDefault(fields.GetString(AmountRefundedKey));
         }
 
         private double NumberParseOrDefault(string value, double defaultVal = 0)
@@ -178,6 +180,7 @@ namespace AirtableClientWrapper
             orderDictionary.AddIfNotNull(AsanaTaskIDKey, AsanaTaskID);
             orderDictionary.AddIfNotNull(OptinSentTypeKey, OptinSentType);
             orderDictionary.AddIfNotNull(ValueOfInventoryKey, ValueOfInventory);
+            orderDictionary.AddIfNotNull(AmountRefundedKey, AmountRefunded);
 
             return orderDictionary;
         }

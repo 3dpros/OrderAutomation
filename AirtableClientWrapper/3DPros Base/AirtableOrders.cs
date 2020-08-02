@@ -15,13 +15,15 @@ namespace AirtableClientWrapper
         private readonly string orderIDKey = "order ID";
         private AirtablePayment _namesTable;
         private AirtableChannels _channelTable;
+        private AirtableMonthly _monthlyTable;
 
 
         public AirtableOrders(bool test = false) : base()
         {
             _namesTable = new AirtablePayment();
             _channelTable = new AirtableChannels();
-            if(test)
+            _monthlyTable = new AirtableMonthly();
+            if (test)
             {
                 TableName = "Orders Test";
             }
@@ -96,18 +98,26 @@ namespace AirtableClientWrapper
                 }
                 else
                 {
+                    fields.FieldsCollection["Month"] = new string[] { _monthlyTable.GetLatestMonthlyID() };
                     var task = _mainAirtableBase.UpdateRecord(TableName, fields, orderID);
                     var response = task.Result;
+                    if(!task.Result.Success)
+                    {
+                        throw new Exception(task.Result.AirtableApiError.ErrorMessage);
+                    }
                     return task.Result.Success;
 
                 }
             }
             else
             {
-
+                fields.FieldsCollection["Created Month"] = new string[] { _monthlyTable.GetLatestMonthlyID() };
                 var task = _mainAirtableBase.CreateRecord(TableName, fields);
                 var response = task.Result;
-
+                if (!task.Result.Success)
+                {
+                    throw new Exception(task.Result.AirtableApiError.ErrorMessage);
+                }
                 return task.Result.Success;
             }
         }

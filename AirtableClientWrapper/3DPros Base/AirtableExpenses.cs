@@ -12,10 +12,15 @@ namespace AirtableClientWrapper
     public class AirtableExpenses : AirtableBaseTable
     {
         private readonly string TableName = "Expenses";
+        private AirtableMonthly _monthlyTable;
+        private AirtableExpenseTypes _expenseTypes;
+
 
 
         public AirtableExpenses() : base()
         {
+            _monthlyTable = new AirtableMonthly();
+            _expenseTypes = new AirtableExpenseTypes();
         }
 
         public string GetRecordName(string recordID)
@@ -33,8 +38,18 @@ namespace AirtableClientWrapper
             //AirtableRecord record = new AirtableRecord();
             Fields fields = new Fields();
             fields.FieldsCollection = expensesData.ToDictionary();
+            fields.FieldsCollection["Month"] = new string[] { _monthlyTable.GetLatestMonthlyID() };
+            var expenseType = _expenseTypes.MatchExpenseTypeRecordID(expensesData.Name);
+            if (!string.IsNullOrEmpty(expenseType))
+            {
+                fields.FieldsCollection["Expense Type"] = new string[] { expenseType };
+            }
             Task<AirtableCreateUpdateReplaceRecordResponse> task = _mainAirtableBase.CreateRecord(TableName, fields);
             var response = task.Result;
+            if(!task.Result.Success)
+            {
+                throw new Exception(task.Result.AirtableApiError.ErrorMessage);
+            }
 
         }
 

@@ -23,7 +23,7 @@ namespace AirtableClientWrapper
         public const string DesignerURLKey = "Designer URL";
         public const string IncludedItemsKey = "Included Items";
         public const string IncludedComponentsKey = "Component";
-
+        public const string RequestedQuantityKey = "Requested Quantity";
 
 
         private Dictionary<string, string> _NameLookup;
@@ -47,6 +47,7 @@ namespace AirtableClientWrapper
 
         public List<string> IncludedItems { get; set; } = new List<string>();
         public string IncludedComponentId { get; set; }
+        public int RequestedQuantity { get; set; }
 
 
         public OrderTrackingData(string orderID, Dictionary<string, string> nameLookup, Dictionary<string, string> itemsLookup)
@@ -83,8 +84,8 @@ namespace AirtableClientWrapper
             OrderURL = fields.GetString(OrderURLKey);
             DesignerURL = fields.GetString(DesignerURLKey);
             OrderValue = NumberParseOrDefault(fields.GetString(OrderValueKey));
+            RequestedQuantity = (int)NumberParseOrDefault(fields.GetString(RequestedQuantityKey));
            // IncludedItems - need to make this readable
-
 
         }
 
@@ -174,7 +175,9 @@ namespace AirtableClientWrapper
                 orderDictionary.AddIfNotNull(IncludedItemsKey, itemIDs);
             }
             orderDictionary.AddIfNotNull(OrderURLKey, OrderURL);
-            orderDictionary.AddIfNotNull(DesignerURLKey, DesignerURL);        
+            orderDictionary.AddIfNotNull(DesignerURLKey, DesignerURL);
+            orderDictionary.AddIfNotNull(RequestedQuantityKey, RequestedQuantity);
+
 
             return orderDictionary;
         }

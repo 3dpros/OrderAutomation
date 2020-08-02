@@ -53,6 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="3DPros Base\AirtableExpenseTypes.cs" />
+    <Compile Include="Inventory Base\AirtableMonthly.cs" />
     <Compile Include="Inventory Base\AirtablePrinters.cs" />
     <Compile Include="AirtableBaseTable.cs" />
     <Compile Include="3DPros Base\AirtableOrders.cs" />
