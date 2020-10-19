@@ -26,10 +26,11 @@ namespace AirtableClientWrapperTests
         public void CreateAndUpdateExpense()
         {
             var ATbase = new AirtableExpenses();
-            var data = new ExpensesData("3D Printer Silk Silver PLA Filament 1.75mm 1KG 2.2LBS Spool 3D Printing Shiny Metallic Shine Silky Materials HZST3D")
+            var data = new ExpensesData("DUMMY EXPENSE")
             {
                 Value = 1.2,
-                Date = DateTime.Now
+                Date = DateTime.Now,
+                OrderId = "1234",
             };
             ATbase.CreateExpensesRecord(data);
         }
@@ -54,6 +55,7 @@ namespace AirtableClientWrapperTests
 
             order.TotalPrice = 504.23;
             order.ValueOfInventory = 233.04;
+            order.AmountRefunded = 5;
 
             //            order.ShipDate = DateTime.Now;
             var retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
@@ -85,11 +87,11 @@ namespace AirtableClientWrapperTests
             order.Notes = "this is a test order";
             order.Description = "test order";
             order.PrintOperator = "";
-            order.IncludedItems = new List<string> { "Shotgun Shell Ornament", "zzz - dummy item" };
+            order.IncludedItems = new List<string> { "TEST Shotgun Shell Ornament", "zzz - dummy item" };
             order.DesignerURL = "test";
             order.RequestedQuantity = 23;
 
-            ATbase.CreateOrderRecord(order);
+            ATbase.CreateOrderRecord(order, out _);
 
             //            order.ShipDate = DateTime.Now;
             var retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
@@ -97,11 +99,27 @@ namespace AirtableClientWrapperTests
             Assert.Equal(order.Notes, retrievedRecord.Notes);
             Assert.Equal(order.Description, retrievedRecord.Description);
 
-            ATbase.CreateOrderRecord(order, true);
+            ATbase.CreateOrderRecord(order, out _, true);
 
             retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
 
             ATbase.DeleteOrderRecord(order);
+        }
+
+        [Fact]
+        public void CreateTransaction()
+        {
+            AirtableTransactions ATbase = new AirtableTransactions();
+            string orderID = "1234567";
+            var order = ATbase.NewTransactionData(null);
+
+            order.Name = "this is a test order";
+            order.Quantity = 5;
+            order.Item ="zzz - dummy item";
+
+            ATbase.CreateOrderRecord(order);
+
+
         }
 
         class EmailData
@@ -273,6 +291,7 @@ namespace AirtableClientWrapperTests
             componentData = materials.GetComponentByName("ZZZ - Dummy Component");
 
             Assert.Equal(originalQuantity - 10, componentData.Quantity);
+
          //   Assert.Equal(componentData.IsBelowThreshhold())
 
 
@@ -293,6 +312,7 @@ namespace AirtableClientWrapperTests
             List<string> printers;
             string preferredPrinter;
             bool value = materials.GetPotentialPrintersList(product, out printers, out preferredPrinter);
+            value = materials.GetPreferredShipper(product, out string preferredShipper);
 
             Assert.True(printers.Count > 0);
             Assert.Equal("Kyle Perkuhn", preferredPrinter);

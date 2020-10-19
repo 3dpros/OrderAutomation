@@ -15,6 +15,7 @@ namespace AirtableClientWrapper
         private readonly string internalPriceFieldName = "Internal Price";
         private readonly string pendingFieldName = "Pending";
         private readonly string quantityFieldName = "Quantity";
+        private readonly string warehouseQuantityFieldName = "Warehouse Quantity";
         private readonly string detailsFieldName = "Details";
         private readonly string externalFieldName = "External";
         private readonly string numberOfBatchesFieldName = "Number Of Batches";
@@ -41,6 +42,22 @@ namespace AirtableClientWrapper
                 updateRecord(quantityFieldName, value);
             }
         }
+        public int WarehouseQuantity
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey(warehouseQuantityFieldName))
+                {
+                    return int.Parse(Record.Fields[warehouseQuantityFieldName]?.ToString());
+                }
+                return -1;
+            }
+            set
+            {
+                updateRecord(warehouseQuantityFieldName, value);
+            }
+        }
+
         public int MinimumStock
         {
             get

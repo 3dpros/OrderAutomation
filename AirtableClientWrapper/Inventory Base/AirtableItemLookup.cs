@@ -18,13 +18,15 @@ namespace AirtableClientWrapper
     public class AirtableItemLookup : AirtableBaseTable
     {
         private readonly string ProductsTableName = "Products Database";
-        
+        private readonly string componentsTableName = "Components";
+
+
         private readonly string nameKey = "Name";
         private readonly string logFieldName = "Log";
         private readonly string skuKey = "SKU";
-        private readonly string componentsFieldName = "Components";
         private readonly string potentialPrintersFieldName = "Potential Printers";
         private readonly string preferredPrinterFieldName = "Preferred Printer";
+        private readonly string preferredShipperFieldName = "Preferred Shipper";
         private readonly string defaultOwnersTableName = "Printers";
 
 
@@ -44,7 +46,7 @@ namespace AirtableClientWrapper
 
         public AirtableRecord RetreiveComponentsRecord(string recordID)
         {
-            var cTask = _invAirtableBase.RetrieveRecord(componentsFieldName, recordID);
+            var cTask = _invAirtableBase.RetrieveRecord(componentsTableName, recordID);
             return cTask.Result.Record;
         }
 
@@ -137,6 +139,29 @@ namespace AirtableClientWrapper
             return false;
         }
 
+        public bool GetPreferredShipper(InventoryProduct product, out string preferredShipper)
+        {
+            return GetPreferredShipperCore(product.Record, out preferredShipper);
+        }
+
+        private bool GetPreferredShipperCore(AirtableRecord record, out string preferredShipper)
+        {
+            preferredShipper = "";
+            if (record.Fields.ContainsKey(preferredShipperFieldName))
+            {
+                foreach (var component in (JArray)(record.Fields[preferredShipperFieldName]))
+                {
+                    var cTask = _invAirtableBase.RetrieveRecord(defaultOwnersTableName, component.ToString());
+                    preferredShipper = cTask.Result.Record.Fields["Name"].ToString();
+                    break;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+
         public bool LogInventoryRequestCreation(InventoryComponent componentRecord, int numberToRequest)
         {
             componentRecord.Pending += numberToRequest;
@@ -171,7 +196,7 @@ namespace AirtableClientWrapper
             else
                 query = "SEARCH(LOWER('" + componentName + "'),LOWER({" + nameKey + "})) > 0";
                 
-            Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(componentsFieldName, offset, null, query);
+            Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(componentsTableName, offset, null, query);
             //if there are multiple matches in an inexact match, try an exact match instead
             if(task.Result.Records?.Count() > 1 && !exactMatch)
             {
@@ -188,7 +213,7 @@ namespace AirtableClientWrapper
         public void UpdateComponentRecord(InventoryComponent component)
         {
             var currentRecord = RetreiveComponentsRecord(component.Record.Id);
-            var task = _invAirtableBase.UpdateRecord(componentsFieldName, component.UpdatedFields, component.Record.Id);
+            var task = _invAirtableBase.UpdateRecord(componentsTableName, component.UpdatedFields, component.Record.Id);
             var response = task.Result;
         }
 

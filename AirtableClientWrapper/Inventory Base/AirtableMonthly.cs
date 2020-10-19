@@ -33,7 +33,7 @@ namespace AirtableClientWrapper
         }
         public string GetMonthlyID(DateTime date)
         {
-            var currentMonth = DateTime.Now.ToString("MM/yyyy");
+            var currentMonth = date.ToString("MM/yyyy");
             Fields fields = new Fields();
             fields.AddField(nameKey, currentMonth);
             var dict = GetMonthlyEntries();

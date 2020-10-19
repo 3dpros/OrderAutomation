@@ -98,7 +98,7 @@ namespace AirtableClientWrapper
                 }
                 else
                 {
-                    fields.FieldsCollection["Month"] = new string[] { _monthlyTable.GetLatestMonthlyID() };
+                    fields.FieldsCollection["Month"] = new string[] { _monthlyTable.GetMonthlyID(order.ShipDate) };
                     var task = _mainAirtableBase.UpdateRecord(TableName, fields, orderID);
                     var response = task.Result;
                     if(!task.Result.Success)

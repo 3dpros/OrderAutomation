@@ -46,17 +46,16 @@ namespace AirtableClientWrapper
         }
         public bool CreateOrderRecord(OrderData order, bool updateIfPresent = false)
         {
-            return CreateOrderRecord(OrderDataToOrderTrackingData(order), updateIfPresent);
+            return CreateOrderRecord(OrderDataToOrderTrackingData(order), out _, updateIfPresent);
         }
 
 
-        public bool CreateOrderRecord(OrderTrackingData order, bool updateIfPresent = false)
+        public bool CreateOrderRecord(OrderTrackingData order, out string recordID, bool updateIfPresent = false)
         {
             //AirtableRecord record = new AirtableRecord();
             Fields fields = new Fields();
             fields.FieldsCollection = order.ToDictionary();
-            string orderID = "";
-            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out orderID);
+            var existingRecord = GetRecordByOrderID(order.OrderID.ToString(), out recordID);
 
             //order is present
             if (existingRecord != null)
@@ -68,7 +67,7 @@ namespace AirtableClientWrapper
                 }
                 else
                 {
-                    var task = _invAirtableBase.UpdateRecord(TableName, fields, orderID);
+                    var task = _invAirtableBase.UpdateRecord(TableName, fields, recordID);
                     var response = task.Result;
                     return task.Result.Success;
 
@@ -83,6 +82,7 @@ namespace AirtableClientWrapper
                 {
                     throw new Exception(task.Result.AirtableApiError.ErrorMessage);
                 }
+                recordID = response.Record.Id;
                 return task.Result.Success;
             }
         }

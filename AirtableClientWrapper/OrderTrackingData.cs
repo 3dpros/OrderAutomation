@@ -16,6 +16,7 @@ namespace AirtableClientWrapper
         public const string RushKey = "Priority";
         public const string DueDateKey = "Due Date";
         public const string InventoryRequestKey = "Inventory Request";
+        public const string OrderTypeKey = "Order Type";
         public const string PrintOperatorKey = "Printer Operator";
         public const string ShipperKey = "Shipping";
         public const string ShippedDateKey = "Ship Date";
@@ -28,8 +29,12 @@ namespace AirtableClientWrapper
 
         private Dictionary<string, string> _NameLookup;
         private Dictionary<string, string> _ItemsLookup;
-
-
+        public enum OrderTypes
+        {
+            Order,
+            InventoryRequest,
+            TransferRequest,
+        }
         public string OrderID { get; set; }
         public double OrderValue { get; set; }
         public string Stage { get; set; }
@@ -37,6 +42,22 @@ namespace AirtableClientWrapper
         public string Notes { get; set; }
         public bool Priority { get; set; }
         public bool IsInventoryRequest { get; set; }
+        private string OrderType { get; set; } = "Order";
+        public void SetOrderType(OrderTypes OrderTypeEnum)
+        {
+            switch(OrderTypeEnum)
+            {
+                case OrderTypes.Order:
+                    OrderType = "Order";
+                    break;
+                case OrderTypes.InventoryRequest:
+                    OrderType = "Inventory Request";
+                    break;
+                case OrderTypes.TransferRequest:
+                    OrderType = "Transfer Request";
+                    break;
+            }
+        }
 
         public DateTime DueDate { get; set; }
         public DateTime ShipDate { get; set; }
@@ -79,6 +100,7 @@ namespace AirtableClientWrapper
             { ShipDate = DateTime.Parse(fields.GetString(ShippedDateKey)); }
             Priority = (fields.GetString(RushKey).ToLower() == "true");
             IsInventoryRequest = (fields.GetString(InventoryRequestKey).ToLower() == "true");
+            OrderType = (fields.GetString(OrderTypeKey));
             PrintOperator = GetNameFromIdIfPresent(fields.GetString(PrintOperatorKey), _NameLookup);
             Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
             OrderURL = fields.GetString(OrderURLKey);
@@ -168,6 +190,7 @@ namespace AirtableClientWrapper
             }
             orderDictionary.AddIfNotNull(RushKey, Priority);
             orderDictionary.AddIfNotNull(InventoryRequestKey, IsInventoryRequest);
+            orderDictionary.AddIfNotNull(OrderTypeKey, OrderType);
             orderDictionary.AddIfNotNull(PrintOperatorKey, printOperatorID);
             orderDictionary.AddIfNotNull(ShipperKey, shipperID);
             if (itemIDs.Length > 0)
