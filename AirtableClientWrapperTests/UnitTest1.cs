@@ -81,13 +81,15 @@ namespace AirtableClientWrapperTests
         public void CreateAndUpdateOrderTracking()
         {
             AirtableOrderTracking ATbase = new AirtableOrderTracking();
+            AirtableTransactions TransactionsBase = new AirtableTransactions();
+
             string orderID = "1234567";
             var order = ATbase.NewOrderTrackingData(orderID);
 
             order.Notes = "this is a test order";
             order.Description = "test order";
             order.PrintOperator = "";
-            order.IncludedItems = new List<string> { "TEST Shotgun Shell Ornament", "zzz - dummy item" };
+            order.IncludedItems = new List<string> {"zzz - dummy item" };
             order.DesignerURL = "test";
             order.RequestedQuantity = 23;
 
@@ -105,17 +107,34 @@ namespace AirtableClientWrapperTests
 
             ATbase.DeleteOrderRecord(order);
         }
+        [Fact]
+        public void RetrieveOrderTracking()
+        {
+            AirtableOrderTracking ATbase = new AirtableOrderTracking();
+            AirtableTransactions TransactionsBase = new AirtableTransactions();
+
+            string orderID = "1908720100";
+
+            var retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
+
+        }
+
 
         [Fact]
         public void CreateTransaction()
         {
+
             AirtableTransactions ATbase = new AirtableTransactions();
             string orderID = "1234567";
-            var order = ATbase.NewTransactionData(null);
+
+            var productName = "zzz - dummy item";
+            var sut = new AirtableItemLookup();
+
+            var order = ATbase.NewTransactionData(sut.FindItemRecord(productName));
 
             order.Name = "this is a test order";
             order.Quantity = 5;
-            order.Item ="zzz - dummy item";
+            //order.Item ="zzz - dummy item";
 
             ATbase.CreateOrderRecord(order);
 
@@ -278,7 +297,6 @@ namespace AirtableClientWrapperTests
         {
             var materials = new AirtableItemLookup();
             var components = new List<InventoryComponent>();
-            var producta = materials.FindItemRecord("Crochet Blocking Board", "", 9);
             var product = materials.FindItemRecord("zzz - dummy item", "purple", 6);
             var componentData = materials.GetComponentByName("ZZZ - Dummy Component");
             var originalQuantity = componentData.Quantity;

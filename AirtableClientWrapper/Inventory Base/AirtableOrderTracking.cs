@@ -12,8 +12,8 @@ namespace AirtableClientWrapper
     public class AirtableOrderTracking : AirtableBaseTable
     {
         private readonly string TableName = "Order Tracking";
-        private readonly string nameKey = "Name";
-        private readonly string orderIDKey = "order ID";
+        private readonly string nameKey = "Short Description";
+        private readonly string orderIDKey = "Order ID";
 
         private AirtablePrinters _namesTable = new AirtablePrinters();
         private AirtableItemLookup _itemsTable = new AirtableItemLookup();

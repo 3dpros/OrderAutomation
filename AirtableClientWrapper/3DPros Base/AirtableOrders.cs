@@ -112,6 +112,10 @@ namespace AirtableClientWrapper
             else
             {
                 fields.FieldsCollection["Created Month"] = new string[] { _monthlyTable.GetLatestMonthlyID() };
+                if(order.ShipDate != null)
+                {
+                    fields.FieldsCollection["Month"] = new string[] { _monthlyTable.GetMonthlyID(order.ShipDate) };
+                }
                 var task = _mainAirtableBase.CreateRecord(TableName, fields);
                 var response = task.Result;
                 if (!task.Result.Success)

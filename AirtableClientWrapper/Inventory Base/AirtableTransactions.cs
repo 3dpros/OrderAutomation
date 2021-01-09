@@ -60,6 +60,12 @@ namespace AirtableClientWrapper
             return a;
         }
 
+        public TransactionData GetTransactionByRecordID(string TransactionRecordID)
+        {
+            Task<AirtableRetrieveRecordResponse> task = _invAirtableBase.RetrieveRecord(TableName, TransactionRecordID);
+            return new TransactionData(task.Result.Record.Fields, _itemsTable.GetProductsLookup());
+        }
+
     }
 
 }

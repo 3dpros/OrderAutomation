@@ -202,12 +202,17 @@ namespace AirtableClientWrapper
             {
                 return this.GetComponentByName(componentName, true);
             }
-            var record = task.Result.Records?.Single();
+            var record = task.Result.Records?.SingleOrDefault();
             if (record != null)
             {
                 return new InventoryComponent(record);
             }
             return null;
+        }
+        public InventoryComponent GetComponentByID(string componentID)
+        {
+            var task = _invAirtableBase.RetrieveRecord(componentsTableName, componentID);
+            return new InventoryComponent(task.Result.Record);
         }
 
         public void UpdateComponentRecord(InventoryComponent component)
@@ -351,6 +356,12 @@ namespace AirtableClientWrapper
                 }
             }
             return null;
+        }
+
+        public InventoryProduct GetItemRecordByRecordID(string productID)
+        {
+            var task = _invAirtableBase.RetrieveRecord(ProductsTableName, productID);
+            return new InventoryProduct(task.Result.Record);
         }
 
         public Dictionary<string, string> GetProductsLookup()

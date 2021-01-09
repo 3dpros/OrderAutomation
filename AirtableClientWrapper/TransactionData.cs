@@ -20,22 +20,32 @@ namespace AirtableClientWrapper
         private Dictionary<string, string> _ItemsLookup;
 
         public string Name { get; set; }
-
-        public string Item { get; set; } 
         public int Quantity { get; set; }
         public double Paid { get; set; }
 
         public string OrderID { get; set; }
 
-        public AirtableRecord ItemRecord { get; set; }
+        public string ItemRecordId { get; set; }
 
 
-        public TransactionData(InventoryProduct product, Dictionary<string, string> itemsLookup)
+        public TransactionData(string productRecordID, Dictionary<string, string> itemsLookup)
         {
             _ItemsLookup = itemsLookup;
-            this.ItemRecord = product.Record;
+            this.ItemRecordId = productRecordID;
 
+            this.Name = itemsLookup[ItemRecordId];
+        }
+
+        public TransactionData(InventoryProduct product, Dictionary<string, string> itemsLookup) : this (product.Record.Id, itemsLookup)
+        {
             this.Name = product.UniqueName;
+        }
+
+        public TransactionData(Dictionary<string, object> fields, Dictionary<string, string> itemsLookup) : this(fields.GetString(IncludedItemsKey), itemsLookup)
+        {
+            this.Quantity = int.Parse(fields.GetString(QuantityKey));
+            this.Name = fields.GetString(OrderIdKey);
+            this.Paid = double.Parse(fields.GetString(PaidKey));
         }
 
         //todo this is a copy of the orders method, should create a common place for this
@@ -107,20 +117,19 @@ namespace AirtableClientWrapper
         {
             Dictionary<string, object> orderDictionary = new Dictionary<string, object>();
 
-            var itemIDs = GetIdFromNameIfPresent(Item, _ItemsLookup).ToArray();
+          //  var itemIDs = GetIdFromNameIfPresent(Item, _ItemsLookup).ToArray();
             orderDictionary.AddIfNotNull(NameKey, Name);
-            if (ItemRecord != null)
+            orderDictionary.Add(IncludedItemsKey, new List<string> { ItemRecordId });
+           // else if (itemIDs.Length > 0)
             {
-                orderDictionary.Add(IncludedItemsKey, new List<string> { ItemRecord.Id });
-            }
-            else if (itemIDs.Length > 0)
-            {
-                orderDictionary.AddIfNotNull(IncludedItemsKey, itemIDs);
+          //      orderDictionary.AddIfNotNull(IncludedItemsKey, itemIDs);
             }
             orderDictionary.AddIfNotNull(QuantityKey, Quantity);
             orderDictionary.AddIfNotNull(PaidKey, Paid);
-            orderDictionary.AddIfNotNull(OrderIdKey, new List<string> { OrderID });
-
+            if (OrderID != null)
+            {
+                orderDictionary.Add(OrderIdKey, new List<string> { OrderID });
+            }
             return orderDictionary;
         }
 

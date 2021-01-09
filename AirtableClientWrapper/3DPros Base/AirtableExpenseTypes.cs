@@ -43,7 +43,7 @@ namespace AirtableClientWrapper
                     var keywords = (record.Fields[keyWordsKey].ToString().Split(',').ToList());
                     foreach (var word in keywords)
                     {
-                        if (expenseName.ToLower().Contains(word.ToLower()))
+                        if (expenseName.ToLower().Trim().Contains(word.ToLower().Trim()))
                         {
                             return record.Id;
                         }

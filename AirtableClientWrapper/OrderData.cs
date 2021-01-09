@@ -11,6 +11,7 @@ namespace AirtableClientWrapper
         public const string OrderIDKey = "order ID";
         public const string DescriptionKey = "Description";
         public const string NotesKey = "Notes";
+        public const string OrderNoteKey = "Order Note";
         public const string CustomerKey = "Customer";
         public const string TotalPaymentKey = "Total Payment";
         public const string ActualShippingKey = "Actual Shipping";
@@ -36,6 +37,7 @@ namespace AirtableClientWrapper
         public string Description { get; set; }
         public string CustomerEmail { get; set; }
         public string Notes { get; set; }
+        public string OrderNote { get; set; }
         public double TotalPrice { get; set; }
         public double ShippingCost { get; set; }
         public double ShippingCharge { get; set; }
@@ -71,6 +73,7 @@ namespace AirtableClientWrapper
             Description = fields.GetString(DescriptionKey);
             CustomerEmail = fields.GetString(CustomerKey);
             Notes = fields.GetString(NotesKey);
+            OrderNote = fields.GetString(OrderNoteKey);
             TotalPrice = NumberParseOrDefault(fields.GetString(TotalPaymentKey));
             ShippingCost = NumberParseOrDefault(fields.GetString(ActualShippingKey));
             ShippingCharge = NumberParseOrDefault(fields.GetString(ShippingChargeKey));
@@ -159,6 +162,7 @@ namespace AirtableClientWrapper
             orderDictionary.AddIfNotNull(OrderIDKey, OrderID.ToString());
             orderDictionary.AddIfNotNull(DescriptionKey, Description);
             orderDictionary.AddIfNotNull(NotesKey, Notes);
+            orderDictionary.AddIfNotNull(OrderNoteKey, OrderNote);
             orderDictionary.AddIfNotNull(CustomerKey, CustomerEmail);
             orderDictionary.AddIfNotNull(TotalPaymentKey, TotalPrice);
             orderDictionary.AddIfNotNull(ActualShippingKey, ShippingCost);

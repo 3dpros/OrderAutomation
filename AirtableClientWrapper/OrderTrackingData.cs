@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace AirtableClientWrapper
         public const string StageKey = "Stage";
         public const string DescriptionKey = "Short Description";
         public const string NotesKey = "Notes";
+        public const string OrderNoteKey = "Order Note";
         public const string RushKey = "Priority";
         public const string DueDateKey = "Due Date";
         public const string InventoryRequestKey = "Inventory Request";
@@ -40,7 +42,9 @@ namespace AirtableClientWrapper
         public string Stage { get; set; }
         public string Description { get; set; }
         public string Notes { get; set; }
+        public string OrderNote { get; set; }
         public bool Priority { get; set; }
+
         public bool IsInventoryRequest { get; set; }
         private string OrderType { get; set; } = "Order";
         public void SetOrderType(OrderTypes OrderTypeEnum)
@@ -67,6 +71,7 @@ namespace AirtableClientWrapper
         public string DesignerURL { get; set; }
 
         public List<string> IncludedItems { get; set; } = new List<string>();
+        public List<string> Transactions { get; set; } = new List<string>();
         public string IncludedComponentId { get; set; }
         public int RequestedQuantity { get; set; }
 
@@ -93,6 +98,7 @@ namespace AirtableClientWrapper
         {
             Description = fields.GetString(DescriptionKey);
             Notes = fields.GetString(NotesKey).Trim();
+            OrderNote = fields.GetString(OrderNoteKey).Trim();
             Stage = fields.GetString(StageKey);
             if (fields.GetString(DueDateKey) != "")
             { DueDate = DateTime.Parse(fields.GetString(DueDateKey)); }
@@ -107,8 +113,16 @@ namespace AirtableClientWrapper
             DesignerURL = fields.GetString(DesignerURLKey);
             OrderValue = NumberParseOrDefault(fields.GetString(OrderValueKey));
             RequestedQuantity = (int)NumberParseOrDefault(fields.GetString(RequestedQuantityKey));
-           // IncludedItems - need to make this readable
-
+            // IncludedItems - need to make this readable
+            fields.TryGetValue("Transactions", out var transactionsObj);
+            if (transactionsObj != null)
+            {
+                foreach (var txn in (JArray)(transactionsObj))
+                {
+                    Transactions.Add(txn.ToString());
+                }
+            }
+            
         }
 
         private string GetNameFromIdIfPresent(object nameID, Dictionary<string, string> lookup)
@@ -153,7 +167,7 @@ namespace AirtableClientWrapper
                         //if exact match isnt found, try for inexact match
                         foreach (KeyValuePair<string, string> item in lookup)
                         {
-                            if (item.Value.Contains(name) || name.Contains(item.Value))
+                            if (!string.IsNullOrWhiteSpace(item.Value) && (item.Value.Contains(name) || name.Contains(item.Value)))
                             {
                                 IDs.Add(item.Key);
                             }
@@ -170,6 +184,8 @@ namespace AirtableClientWrapper
             string[] printOperatorID = GetIdFromNameIfPresent(PrintOperator, _NameLookup)?.ToArray();
             string[] shipperID = GetIdFromNameIfPresent(Shipper, _NameLookup)?.ToArray();
             string[] itemIDs = GetIdFromNameIfPresent(IncludedItems, _ItemsLookup)?.ToArray();
+            string[] transactions = GetIdFromNameIfPresent(Transactions, _ItemsLookup)?.ToArray();
+
             if (!string.IsNullOrEmpty(IncludedComponentId))
             {
                 orderDictionary.AddIfNotNull(IncludedComponentsKey, new string[] { IncludedComponentId });
@@ -180,6 +196,7 @@ namespace AirtableClientWrapper
             orderDictionary.AddIfNotNull(OrderValueKey, OrderValue);
             orderDictionary.AddIfNotNull(DescriptionKey, Description);
             orderDictionary.AddIfNotNull(NotesKey, Notes);
+            orderDictionary.AddIfNotNull(OrderNoteKey, OrderNote);
             if (DueDate.Year > 2010)
             {
                 orderDictionary.AddIfNotNull(DueDateKey, DueDate.ToString("d"));
