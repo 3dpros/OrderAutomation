@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AirtableApiClient;
+using Newtonsoft.Json.Linq;
 
 namespace AirtableClientWrapper
 {
@@ -17,7 +18,6 @@ namespace AirtableClientWrapper
 
 
 
-        private Dictionary<string, string> _ItemsLookup;
 
         public string Name { get; set; }
         public int Quantity { get; set; }
@@ -28,23 +28,32 @@ namespace AirtableClientWrapper
         public string ItemRecordId { get; set; }
 
 
-        public TransactionData(string productRecordID, Dictionary<string, string> itemsLookup)
+        public TransactionData(string productRecordID)
         {
-            _ItemsLookup = itemsLookup;
             this.ItemRecordId = productRecordID;
 
-            this.Name = itemsLookup[ItemRecordId];
+            this.Name = ItemRecordId;
         }
 
-        public TransactionData(InventoryProduct product, Dictionary<string, string> itemsLookup) : this (product.Record.Id, itemsLookup)
+        public TransactionData(InventoryProduct product) : this (product.Record.Id)
         {
             this.Name = product.UniqueName;
         }
 
-        public TransactionData(Dictionary<string, object> fields, Dictionary<string, string> itemsLookup) : this(fields.GetString(IncludedItemsKey), itemsLookup)
+        public TransactionData(Dictionary<string, object> fields) : this(fields.GetString(IncludedItemsKey))
         {
+            fields.TryGetValue(IncludedItemsKey, out var itemsObj);
+            if (itemsObj != null)
+            {
+                this.ItemRecordId = ((JArray)itemsObj)[0].Value<string>();
+            }
+
             this.Quantity = int.Parse(fields.GetString(QuantityKey));
-            this.Name = fields.GetString(OrderIdKey);
+            fields.TryGetValue(OrderIdKey, out var orderObj);
+            if (orderObj != null)
+            {
+                this.OrderID = ((JArray)orderObj)[0].Value<string>();
+            }
             this.Paid = double.Parse(fields.GetString(PaidKey));
         }
 

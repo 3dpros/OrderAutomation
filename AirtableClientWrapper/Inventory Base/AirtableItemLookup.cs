@@ -364,24 +364,6 @@ namespace AirtableClientWrapper
             return new InventoryProduct(task.Result.Record);
         }
 
-        public Dictionary<string, string> GetProductsLookup()
-        {
-            Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(ProductsTableName);
-            var response = task.Result;
-            var dict = new Dictionary<string, string>();
-
-            string key = "UniqueName";
-
-            foreach (var record in response.Records)
-            {
-                if (record.Fields.ContainsKey(key))
-                {
-                    dict.Add(record.Id, record.Fields[key].ToString());
-                }               
-            }
-            return dict;
-        }
-
     }
 
 }

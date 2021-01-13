@@ -13,7 +13,6 @@ namespace AirtableClientWrapper
     {
         private readonly string TableName = "Transactions";
         private readonly string nameKey = "Name";
-        private readonly string orderIDKey = "order ID";
 
         private AirtablePrinters _namesTable = new AirtablePrinters();
         private AirtableItemLookup _itemsTable = new AirtableItemLookup();
@@ -54,7 +53,7 @@ namespace AirtableClientWrapper
 
         public TransactionData NewTransactionData(InventoryProduct product)
         {
-            TransactionData a = new TransactionData(product, _itemsTable.GetProductsLookup());
+            TransactionData a = new TransactionData(product);
             if (a is null)
             { throw new ArgumentNullException(); }
             return a;
@@ -63,7 +62,7 @@ namespace AirtableClientWrapper
         public TransactionData GetTransactionByRecordID(string TransactionRecordID)
         {
             Task<AirtableRetrieveRecordResponse> task = _invAirtableBase.RetrieveRecord(TableName, TransactionRecordID);
-            return new TransactionData(task.Result.Record.Fields, _itemsTable.GetProductsLookup());
+            return new TransactionData(task.Result.Record.Fields);
         }
 
     }

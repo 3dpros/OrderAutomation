@@ -112,11 +112,15 @@ namespace AirtableClientWrapperTests
         {
             AirtableOrderTracking ATbase = new AirtableOrderTracking();
             AirtableTransactions TransactionsBase = new AirtableTransactions();
+            AirtableItemLookup ProductsBase = new AirtableItemLookup();
+
 
             string orderID = "1908720100";
 
             var retrievedRecord = ATbase.GetRecordByOrderID(orderID, out _);
 
+            var order = TransactionsBase.GetTransactionByRecordID(retrievedRecord.Transactions[0]);
+            var productName = ProductsBase.GetItemRecordByRecordID(order.ItemRecordId).DisplayName;
         }
 
 
@@ -125,21 +129,21 @@ namespace AirtableClientWrapperTests
         {
 
             AirtableTransactions ATbase = new AirtableTransactions();
-            string orderID = "1234567";
 
             var productName = "zzz - dummy item";
             var sut = new AirtableItemLookup();
 
             var order = ATbase.NewTransactionData(sut.FindItemRecord(productName));
 
-            order.Name = "this is a test order";
             order.Quantity = 5;
             //order.Item ="zzz - dummy item";
 
             ATbase.CreateOrderRecord(order);
 
 
+
         }
+
 
         class EmailData
         {
@@ -171,7 +175,7 @@ namespace AirtableClientWrapperTests
         [Fact]
         public void UpdateComponentForInventoryRequest_test()
         {
-            var componentName = "ZZZ - Dummy Component";
+            var componentName = "Clock Kit (small)";
             var sut = new AirtableItemLookup();
 
             var retrievedcomponent = sut.GetComponentByName(componentName);

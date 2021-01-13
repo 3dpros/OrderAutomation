@@ -14,11 +14,15 @@ namespace AirtableClientWrapper
         private readonly string batchSizeFieldName = "Batch Size";
         private readonly string internalPriceFieldName = "Internal Price";
         private readonly string pendingFieldName = "Pending";
+        private readonly string calculatedPendingFieldName = "Calculated Pending";
         private readonly string quantityFieldName = "Quantity";
+        private readonly string quantityInOpenOrdersFieldName = "In Open Orders";
         private readonly string warehouseQuantityFieldName = "Warehouse Quantity";
         private readonly string detailsFieldName = "Details";
         private readonly string externalFieldName = "External";
         private readonly string numberOfBatchesFieldName = "Number Of Batches";
+
+
 
         public Fields UpdatedFields = new Fields();
         private void updateRecord(string fieldName, object value)
@@ -55,6 +59,17 @@ namespace AirtableClientWrapper
             set
             {
                 updateRecord(warehouseQuantityFieldName, value);
+            }
+        }
+        public int QuantityInOpenOrders
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey(quantityInOpenOrdersFieldName))
+                {
+                    return int.Parse(Record.Fields[quantityInOpenOrdersFieldName]?.ToString());
+                }
+                return -1;
             }
         }
 
@@ -121,6 +136,18 @@ namespace AirtableClientWrapper
                 updateRecord(pendingFieldName, value);
             }
         }
+
+        public int CalculatedPending
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey(calculatedPendingFieldName))
+                {
+                    return int.Parse(Record.Fields[calculatedPendingFieldName]?.ToString());
+                }
+                return 0;
+            }
+        }
         public string id { get
             {
                 return Record.Id;
@@ -172,7 +199,7 @@ namespace AirtableClientWrapper
 
         public bool IsBelowThreshhold()
         {
-            return (MinimumStock > (Quantity + Pending));
+            return (MinimumStock > (Quantity + CalculatedPending - QuantityInOpenOrders));
         }
 
 
