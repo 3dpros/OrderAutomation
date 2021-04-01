@@ -21,13 +21,20 @@ namespace AirtableClientWrapper
         public const string InventoryRequestKey = "Inventory Request";
         public const string OrderTypeKey = "Order Type";
         public const string PrintOperatorKey = "Printer Operator";
+        public const string DestinationLocationKey = "Destination Location";
         public const string ShipperKey = "Shipping";
+        public const string ShipperPayKey = "Shipper Pay";
         public const string ShippedDateKey = "Ship Date";
         public const string OrderURLKey = "Order URL";
         public const string DesignerURLKey = "Designer URL";
         public const string IncludedItemsKey = "Included Items";
         public const string IncludedComponentsKey = "Component";
+        public const string IncludedComponentIDKey = "Component ID";
         public const string RequestedQuantityKey = "Requested Quantity";
+        public const string CancelledKey = "Cancelled";
+        public const string ChannelKey = "Channel";
+
+
 
 
         private Dictionary<string, string> _NameLookup;
@@ -44,8 +51,11 @@ namespace AirtableClientWrapper
         public string Notes { get; set; }
         public string OrderNote { get; set; }
         public string Personalization { get; set; }
+        public string Channel { get; set; }
 
         public bool Priority { get; set; }
+        public bool Cancelled { get; set; }
+
 
         public bool IsInventoryRequest { get; set; }
         private string OrderType { get; set; } = "Order";
@@ -68,8 +78,12 @@ namespace AirtableClientWrapper
         public DateTime DueDate { get; set; }
         public DateTime ShipDate { get; set; }
         public string PrintOperator { get; set; }
+        public string DestinationLocation { get; set; }
+
         public string Shipper { get; set; }
         public string OrderURL { get; set; }
+        public double ShipperPay { get; }
+
         public string DesignerURL { get; set; }
 
         public List<string> IncludedItems { get; set; } = new List<string>();
@@ -107,14 +121,20 @@ namespace AirtableClientWrapper
             if (fields.GetString(ShippedDateKey) != "")
             { ShipDate = DateTime.Parse(fields.GetString(ShippedDateKey)); }
             Priority = (fields.GetString(RushKey).ToLower() == "true");
+            Cancelled = (fields.GetString(CancelledKey).ToLower() == "true");
+
             IsInventoryRequest = (fields.GetString(InventoryRequestKey).ToLower() == "true");
             OrderType = (fields.GetString(OrderTypeKey));
             PrintOperator = GetNameFromIdIfPresent(fields.GetString(PrintOperatorKey), _NameLookup);
+            DestinationLocation = GetNameFromIdIfPresent(fields.GetString(DestinationLocationKey), _NameLookup);
+            Channel = fields.GetString(ChannelKey);
             Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
+            ShipperPay = NumberParseOrDefault(fields.GetString(ShipperPayKey));
             OrderURL = fields.GetString(OrderURLKey);
             DesignerURL = fields.GetString(DesignerURLKey);
             OrderValue = NumberParseOrDefault(fields.GetString(OrderValueKey));
             RequestedQuantity = (int)NumberParseOrDefault(fields.GetString(RequestedQuantityKey));
+           // IncludedComponentId = fields.GetString(IncludedComponentIDKey);
             // IncludedItems - need to make this readable
             fields.TryGetValue("Transactions", out var transactionsObj);
             if (transactionsObj != null)
@@ -184,6 +204,8 @@ namespace AirtableClientWrapper
         {
             Dictionary<string, object> orderDictionary = new Dictionary<string, object>();
             string[] printOperatorID = GetIdFromNameIfPresent(PrintOperator, _NameLookup)?.ToArray();
+            string[] DestinationLocationID = GetIdFromNameIfPresent(DestinationLocation, _NameLookup)?.ToArray();
+
             string[] shipperID = GetIdFromNameIfPresent(Shipper, _NameLookup)?.ToArray();
 
             if (!string.IsNullOrEmpty(IncludedComponentId))
@@ -208,11 +230,13 @@ namespace AirtableClientWrapper
                 orderDictionary.AddIfNotNull(ShippedDateKey, ShipDate.ToString("d"));
             }
             orderDictionary.AddIfNotNull(RushKey, Priority);
+            orderDictionary.AddIfNotNull(CancelledKey, Cancelled);
             orderDictionary.AddIfNotNull(InventoryRequestKey, IsInventoryRequest);
             orderDictionary.AddIfNotNull(OrderTypeKey, OrderType);
             orderDictionary.AddIfNotNull(PrintOperatorKey, printOperatorID);
+            orderDictionary.AddIfNotNull(DestinationLocationKey, DestinationLocationID);
             orderDictionary.AddIfNotNull(ShipperKey, shipperID);
-
+            orderDictionary.AddIfNotNull(ChannelKey, Channel);
             orderDictionary.AddIfNotNull(OrderURLKey, OrderURL);
             orderDictionary.AddIfNotNull(DesignerURLKey, DesignerURL);
             if (RequestedQuantity > 0)

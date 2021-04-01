@@ -139,6 +139,43 @@ namespace AirtableClientWrapper
             return false;
         }
 
+        public string GetPreferredPrinter(InventoryProduct product)
+        {
+            return GetPreferredPrinterCore(product.Record);
+        }
+        public string GetPreferredPrinter(InventoryComponent component)
+        {
+            return GetPreferredPrinterCore(component.Record);
+        }
+
+        /// <summary>
+        /// get the preferred printer for a specified component (for inventory requests) or product record (for on-demand order printing)
+        /// </summary>
+        /// <param name="record"></param>
+        /// <returns></returns>
+        private string GetPreferredPrinterCore(AirtableRecord record)
+        {
+            string preferredPrinter = "";
+            if (record == null)
+            {
+                return "";
+            }
+            var productRecord = record;
+            if (productRecord != null)
+            {
+                if (productRecord.Fields.ContainsKey(preferredPrinterFieldName))
+                {
+                    foreach (var item in (JArray)(productRecord.Fields[preferredPrinterFieldName]))
+                    {
+                        var cTask = _invAirtableBase.RetrieveRecord(defaultOwnersTableName, item.ToString());
+                        preferredPrinter = cTask.Result.Record.Fields["Name"].ToString();
+                        break;
+                    }
+                }
+            }
+            return preferredPrinter;
+        }
+
         public bool GetPreferredShipper(InventoryProduct product, out string preferredShipper)
         {
             return GetPreferredShipperCore(product.Record, out preferredShipper);
@@ -364,6 +401,24 @@ namespace AirtableClientWrapper
             return new InventoryProduct(task.Result.Record);
         }
 
+       /* public Dictionary<string, string> GetProductsLookup()
+        {
+            Task<AirtableListRecordsResponse> task = _invAirtableBase.ListRecords(ProductsTableName);
+            var response = task.Result;
+            var dict = new Dictionary<string, string>();
+
+            string key = "UniqueName";
+
+            foreach (var record in response.Records)
+            {
+                if (record.Fields.ContainsKey(key))
+                {
+                    dict.Add(record.Id, record.Fields[key].ToString());
+                }               
+            }
+            return dict;
+        }
+        */
     }
 
 }

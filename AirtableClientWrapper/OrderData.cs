@@ -21,6 +21,7 @@ namespace AirtableClientWrapper
         public const string DueDateKey = "Due Date";
         public const string PrintOperatorKey = "Printer Operator";
         public const string ShipperKey = "Shipping";
+        public const string ShipperPayKey = "Shipper Pay";
         public const string ChannelKey = "Channel";
         public const string ShippedDateKey = "Ship Date";
         public const string AsanaTaskIDKey = "Asana Task ID";
@@ -49,6 +50,8 @@ namespace AirtableClientWrapper
         public DateTime ShipDate { get; set; }
         public string PrintOperator { get; set; }
         public string Shipper { get; set; }
+        public double ShipperPay { get; set; }
+
         public string Channel { get; set; }
         public string AsanaTaskID { get; set; }
         public string OptinSentType { get; set; }
@@ -87,6 +90,7 @@ namespace AirtableClientWrapper
             Channel = GetNameFromIdIfPresent(fields.GetString(ChannelKey), _ChannelLookup);
             PrintOperator = GetNameFromIdIfPresent(fields.GetString(PrintOperatorKey), _NameLookup);
             Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
+            ShipperPay = NumberParseOrDefault(fields.GetString(ShipperPayKey));
             AsanaTaskID = fields.GetString(AsanaTaskIDKey);
             OptinSentType = fields.GetString(OptinSentTypeKey);
             ValueOfInventory = NumberParseOrDefault(fields.GetString(ValueOfInventoryKey));
@@ -180,6 +184,7 @@ namespace AirtableClientWrapper
             orderDictionary.AddIfNotNull(RushKey, Rush);
             orderDictionary.AddIfNotNull(PrintOperatorKey, printOperatorID);
             orderDictionary.AddIfNotNull(ShipperKey, shipperID);
+            orderDictionary.AddIfNotNull(ShipperPayKey, ShipperPay);
             orderDictionary.AddIfNotNull(ChannelKey, channelID);
             orderDictionary.AddIfNotNull(AsanaTaskIDKey, AsanaTaskID);
             orderDictionary.AddIfNotNull(OptinSentTypeKey, OptinSentType);

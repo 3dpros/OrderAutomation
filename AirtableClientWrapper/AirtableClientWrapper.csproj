@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="3DPros Base\AirtableExpenseTypes.cs" />
     <Compile Include="Inventory Base\AirtableMonthly.cs" />
+    <Compile Include="Inventory Base\AirtableInventory.cs" />
     <Compile Include="Inventory Base\AirtableTransactions.cs" />
     <Compile Include="Inventory Base\AirtablePrinters.cs" />
     <Compile Include="AirtableBaseTable.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="3DPros Base\AirtableChannels.cs" />
     <Compile Include="3DPros Base\AirtablePayment.cs" />
     <Compile Include="AirtableKeys.cs" />
+    <Compile Include="InventoryLocationEntry.cs" />
     <Compile Include="InventoryComponent.cs" />
     <Compile Include="InventoryProduct.cs" />
     <Compile Include="ExpensesData.cs" />

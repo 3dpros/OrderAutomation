@@ -7,20 +7,17 @@ using System.Threading.Tasks;
 
 namespace AirtableClientWrapper
 {
-    public class InventoryComponent
+    public class InventoryLocationEntry
     {
-        private readonly string nameFieldName = "Name";
+        private readonly string nameFieldName = "ID";
+        private readonly string componentIdFieldName = "Component";
+        private readonly string locationFieldName = "Location";
+
         private readonly string minimumStockFieldName = "Minimum Stock";
         private readonly string batchSizeFieldName = "Batch Size";
-        private readonly string internalPriceFieldName = "Internal Price";
-        private readonly string pendingFieldName = "Pending";
         private readonly string calculatedPendingFieldName = "Calculated Pending";
-        private readonly string quantityFieldName = "Quantity";
-        private readonly string quantityInOpenOrdersFieldName = "In Open Orders";
-        private readonly string warehouseQuantityFieldName = "Warehouse Quantity";
-        private readonly string detailsFieldName = "Details";
-        private readonly string externalFieldName = "External";
-        private readonly string numberOfBatchesFieldName = "Number Of Batches";
+        private readonly string quantityFieldName = "Quantity At Location";
+        private readonly string quantityInOpenOrdersFieldName = "Open Orders";
 
 
 
@@ -39,26 +36,11 @@ namespace AirtableClientWrapper
                 {
                     return int.Parse(Record.Fields[quantityFieldName]?.ToString());
                 }
-                return -1;
+                return 0;
             }
             set
             {
                 updateRecord(quantityFieldName, value);
-            }
-        }
-        public int WarehouseQuantity
-        {
-            get
-            {
-                if (Record.Fields.ContainsKey(warehouseQuantityFieldName))
-                {
-                    return int.Parse(Record.Fields[warehouseQuantityFieldName]?.ToString());
-                }
-                return -1;
-            }
-            set
-            {
-                updateRecord(warehouseQuantityFieldName, value);
             }
         }
         public int QuantityInOpenOrders
@@ -85,18 +67,6 @@ namespace AirtableClientWrapper
             }
         }
 
-        public double InternalPrice
-        {
-            get
-            {
-                if (Record.Fields.ContainsKey(internalPriceFieldName))
-                {
-                    return double.Parse(Record.Fields[internalPriceFieldName]?.ToString());
-                }
-                return 0;
-            }
-        }
-
         public int BatchSize
         {
             get
@@ -108,35 +78,7 @@ namespace AirtableClientWrapper
                 return 1;
             }
         }
-
-        public int NumberOfBatches
-        {
-            get
-            {
-                if (Record.Fields.ContainsKey(numberOfBatchesFieldName))
-                {
-                    return Math.Max(1, int.Parse(Record.Fields[numberOfBatchesFieldName]?.ToString()));
-                }
-                return 1;
-            }
-        }
         
-        public int Pending
-        {
-            get
-            {
-                if (Record.Fields.ContainsKey(pendingFieldName))
-                {
-                    return int.Parse(Record.Fields[pendingFieldName]?.ToString());
-                }
-                return 0;
-            }
-            set
-            {
-                updateRecord(pendingFieldName, value);
-            }
-        }
-
         public int CalculatedPending
         {
             get
@@ -154,6 +96,18 @@ namespace AirtableClientWrapper
              }
         }
 
+        public string ComponentId
+        {
+            get
+            {
+                if (Record.Fields.ContainsKey(componentIdFieldName))
+                {
+                    return Record.Fields[componentIdFieldName]?.ToString();
+                }
+                return "";
+            }
+        }
+
         public string Name
         {
             get
@@ -166,33 +120,9 @@ namespace AirtableClientWrapper
             }
         }
 
-        public string Details
-        {
-            get
-            {
-                if (Record.Fields.ContainsKey(detailsFieldName))
-                {
-                    return Record.Fields[detailsFieldName].ToString();
-                }
-                return string.Empty;
-            }
-        }
-
-        public bool IsExternal
-        {
-            get
-            {
-                if (Record.Fields.ContainsKey(externalFieldName))
-                {
-                    return bool.Parse(Record.Fields[externalFieldName].ToString());
-                }
-                return false;
-            }
-        }
-
         public AirtableRecord Record { get; }
 
-        public InventoryComponent(AirtableRecord record)
+        public InventoryLocationEntry(AirtableRecord record)
         {
             Record = record;
         }
@@ -205,8 +135,8 @@ namespace AirtableClientWrapper
         public Dictionary<string, object> ToDictionary()
         {
             Dictionary<string, object> orderDictionary = new Dictionary<string, object>();
+            orderDictionary.AddIfNotNull(quantityFieldName, Quantity);
             return orderDictionary;
-
         }
     }
 }

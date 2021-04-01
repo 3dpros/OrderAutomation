@@ -122,7 +122,18 @@ namespace AirtableClientWrapperTests
             var order = TransactionsBase.GetTransactionByRecordID(retrievedRecord.Transactions[0]);
             var productName = ProductsBase.GetItemRecordByRecordID(order.ItemRecordId).DisplayName;
         }
+        [Fact]
+        public void FindInventoryLocationEntry()
+        {
+            var inventoryLookup = new AirtableInventory();
+            var item = new AirtableItemLookup();
+            var component = item.GetComponentByName("Clitoris, Gold");
+            // var recordID = inventoryLookup.FindRecordByName("Lamp Base", "fgdfg");
+           // inventoryLookup.IncrementQuantityOfItemByName("Blocking Board, Purple, 9\"", "James", 5);
+            inventoryLookup.IncrementQuantityOfItem(component.id, "James English", 5);
 
+
+        }
 
         [Fact]
         public void CreateTransaction()
@@ -172,6 +183,8 @@ namespace AirtableClientWrapperTests
             Assert.Equal(retrievedcomponent.Quantity, originalQuantity + 4);
             Assert.Equal(retrievedcomponent.Pending, originalPending - 10);
        }
+
+
         [Fact]
         public void UpdateComponentForInventoryRequest_test()
         {
@@ -326,7 +339,7 @@ namespace AirtableClientWrapperTests
             
             var materials = new AirtableItemLookup();
             var product = materials.FindItemRecord("zzz - dummy item");
-            var components = materials.GetComponentByName("ZZZ - Dummy Component");
+            var component = materials.GetComponentByName("ZZZ - Dummy Component");
 
             Assert.Equal("Dummy Item (test)", product.DisplayName);
             Assert.Equal("www.dummyurl.com", product.BaseUrl);
@@ -335,10 +348,11 @@ namespace AirtableClientWrapperTests
             string preferredPrinter;
             bool value = materials.GetPotentialPrintersList(product, out printers, out preferredPrinter);
             value = materials.GetPreferredShipper(product, out string preferredShipper);
-
+            preferredPrinter = materials.GetPreferredPrinter(product);
             Assert.True(printers.Count > 0);
             Assert.Equal("Kyle Perkuhn", preferredPrinter);
-            value = materials.GetPotentialPrintersList(components, out printers, out preferredPrinter);
+            value = materials.GetPotentialPrintersList(component, out printers, out preferredPrinter);
+            preferredPrinter = materials.GetPreferredPrinter(component);
 
             Assert.True(printers.Count > 0);
             Assert.Equal("Al Billington", preferredPrinter);

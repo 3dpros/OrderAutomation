@@ -134,8 +134,8 @@ namespace AirtableClientWrapper
             orderTrackingData.ShipDate = orderData.ShipDate;
             orderTrackingData.Priority = orderData.Rush;
             orderTrackingData.OrderURL = orderData.OrderURL;
-            orderTrackingData.OrderValue = orderData.TotalPrice - orderData.ShippingCharge - orderData.MaterialCost;
-
+            orderTrackingData.OrderValue = orderData.TotalPrice - orderData.ShippingCharge - orderData.MaterialCost - orderData.SalesTax;
+            orderTrackingData.Channel = orderData.Channel;
 
             if (orderTrackingData is null)
             { throw new ArgumentNullException(); }
