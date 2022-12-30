@@ -22,6 +22,7 @@ namespace AirtableClientWrapper
         public const string PrintOperatorKey = "Printer Operator";
         public const string ShipperKey = "Shipping";
         public const string ShipperPayKey = "Shipper Pay";
+        public const string StaticPrinterPayKey = "Static Printer Pay";
         public const string ChannelKey = "Channel";
         public const string ShippedDateKey = "Ship Date";
         public const string AsanaTaskIDKey = "Asana Task ID";
@@ -51,7 +52,7 @@ namespace AirtableClientWrapper
         public string PrintOperator { get; set; }
         public string Shipper { get; set; }
         public double ShipperPay { get; set; }
-
+        public double StaticPrinterPay { get; set; }
         public string Channel { get; set; }
         public string AsanaTaskID { get; set; }
         public string OptinSentType { get; set; }
@@ -91,6 +92,7 @@ namespace AirtableClientWrapper
             PrintOperator = GetNameFromIdIfPresent(fields.GetString(PrintOperatorKey), _NameLookup);
             Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
             ShipperPay = NumberParseOrDefault(fields.GetString(ShipperPayKey));
+            StaticPrinterPay = NumberParseOrDefault(fields.GetString(StaticPrinterPayKey));
             AsanaTaskID = fields.GetString(AsanaTaskIDKey);
             OptinSentType = fields.GetString(OptinSentTypeKey);
             ValueOfInventory = NumberParseOrDefault(fields.GetString(ValueOfInventoryKey));
@@ -185,6 +187,7 @@ namespace AirtableClientWrapper
             orderDictionary.AddIfNotNull(PrintOperatorKey, printOperatorID);
             orderDictionary.AddIfNotNull(ShipperKey, shipperID);
             orderDictionary.AddIfNotNull(ShipperPayKey, ShipperPay);
+            orderDictionary.AddIfNotNull(StaticPrinterPayKey, StaticPrinterPay);
             orderDictionary.AddIfNotNull(ChannelKey, channelID);
             orderDictionary.AddIfNotNull(AsanaTaskIDKey, AsanaTaskID);
             orderDictionary.AddIfNotNull(OptinSentTypeKey, OptinSentType);

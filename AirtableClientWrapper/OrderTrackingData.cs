@@ -24,6 +24,7 @@ namespace AirtableClientWrapper
         public const string DestinationLocationKey = "Destination Location";
         public const string ShipperKey = "Shipping";
         public const string ShipperPayKey = "Shipper Pay";
+        public const string StaticPrinterPayKey = "Static Printer Pay";
         public const string ShippedDateKey = "Ship Date";
         public const string OrderURLKey = "Order URL";
         public const string DesignerURLKey = "Designer URL";
@@ -32,6 +33,7 @@ namespace AirtableClientWrapper
         public const string IncludedComponentIDKey = "Component ID";
         public const string RequestedQuantityKey = "Requested Quantity";
         public const string CancelledKey = "Cancelled";
+        public const string ReturnedKey = "Returned";
         public const string ChannelKey = "Channel";
 
 
@@ -55,6 +57,7 @@ namespace AirtableClientWrapper
 
         public bool Priority { get; set; }
         public bool Cancelled { get; set; }
+        public bool Returned { get; set; }
 
 
         public bool IsInventoryRequest { get; set; }
@@ -83,6 +86,7 @@ namespace AirtableClientWrapper
         public string Shipper { get; set; }
         public string OrderURL { get; set; }
         public double ShipperPay { get; }
+        public double StaticPrinterPay { get; }
 
         public string DesignerURL { get; set; }
 
@@ -122,6 +126,7 @@ namespace AirtableClientWrapper
             { ShipDate = DateTime.Parse(fields.GetString(ShippedDateKey)); }
             Priority = (fields.GetString(RushKey).ToLower() == "true");
             Cancelled = (fields.GetString(CancelledKey).ToLower() == "true");
+            Returned = (fields.GetString(ReturnedKey).ToLower() == "true");
 
             IsInventoryRequest = (fields.GetString(InventoryRequestKey).ToLower() == "true");
             OrderType = (fields.GetString(OrderTypeKey));
@@ -130,6 +135,8 @@ namespace AirtableClientWrapper
             Channel = fields.GetString(ChannelKey);
             Shipper = GetNameFromIdIfPresent(fields.GetString(ShipperKey), _NameLookup);
             ShipperPay = NumberParseOrDefault(fields.GetString(ShipperPayKey));
+            StaticPrinterPay = NumberParseOrDefault(fields.GetString(StaticPrinterPayKey));
+
             OrderURL = fields.GetString(OrderURLKey);
             DesignerURL = fields.GetString(DesignerURLKey);
             OrderValue = NumberParseOrDefault(fields.GetString(OrderValueKey));
@@ -231,6 +238,7 @@ namespace AirtableClientWrapper
             }
             orderDictionary.AddIfNotNull(RushKey, Priority);
             orderDictionary.AddIfNotNull(CancelledKey, Cancelled);
+            orderDictionary.AddIfNotNull(ReturnedKey, Returned);
             orderDictionary.AddIfNotNull(InventoryRequestKey, IsInventoryRequest);
             orderDictionary.AddIfNotNull(OrderTypeKey, OrderType);
             orderDictionary.AddIfNotNull(PrintOperatorKey, printOperatorID);
